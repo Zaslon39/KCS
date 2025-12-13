@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -33,6 +34,7 @@
             background-color: var(--card-bg);
             border: 1px solid var(--tg-theme-section-separator-color, rgba(0,0,0,0.05));
             position: relative;
+            /* Убираем cursor: pointer здесь, так как клик теперь на отдельном слое */
         }
 
         .sold-item { opacity: 0.6; order: 9999; }
@@ -48,6 +50,7 @@
             padding: 2px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
+        /* Hitbox - невидимый слой для клика */
         .card-hitbox {
             position: absolute;
             inset: 0;
@@ -151,7 +154,7 @@
             </div>
             
             <div class="overflow-y-auto flex-grow p-4">
-                <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-50 mb-4 border border-gray-100/10 cursor-pointer" onclick="viewFullImageFromDetails()">
+                <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-50 mb-4 border border-gray-100/10 cursor-pointer shadow-sm" onclick="viewFullImageFromDetails()">
                     <img id="detail-img" src="" class="w-full h-full object-contain p-2">
                     <div class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg backdrop-blur-sm pointer-events-none flex gap-1 items-center">
                         <i data-lucide="zoom-in" class="w-4 h-4"></i>
@@ -299,16 +302,35 @@
                 const el = document.createElement('div');
                 el.className = `card rounded-xl overflow-hidden flex flex-col h-full ${isSold ? 'sold-item' : ''}`;
                 
+                // РЕШЕНИЕ:
+                // 1. Создаем card-hitbox (div), который накрывает всё (z-10).
+                // 2. Кнопки (сердце, корзина) делаем z-30, чтобы они были выше hitbox.
+                
                 el.innerHTML = `
+                    <!-- ХИТ-БОКС (КЛИК ПО КАРТОЧКЕ) -->
                     <div class="card-hitbox" onclick="openDetails('${item.id}')"></div>
-                    <img src="${img}" class="card-img" onclick="openDetails('${item.id}')" loading="lazy"> 
+
+                    <div class="relative w-full aspect-square bg-white border-b border-gray-100/10">
+                        <img src="${img}" class="absolute inset-0 w-full h-full object-contain p-2" loading="lazy">
+                        ${isNew && !isSold ? '<div class="ribbon"></div>' : ''}
+                        ${isSold ? '<div class="absolute inset-0 flex items-center justify-center bg-black/10"><span class="bg-black/70 text-white px-2 py-1 rounded text-xs font-bold -rotate-12">SOLD</span></div>' : ''}
+                        
+                        <!-- СЕРДЦЕ (Z-30, выше хитбокса) -->
+                        <button onclick="toggleFav('${item.id}', this)" class="absolute top-1 left-1 z-30 p-2 rounded-full bg-white/80 backdrop-blur-sm transition-colors active:scale-90 ${isFav ? 'text-red-500' : 'text-gray-400'} shadow-sm cursor-pointer">
+                            <i data-lucide="heart" class="w-6 h-6 ${isFav ? 'fill-current' : ''}"></i>
+                        </button>
+                    </div>
                     
                     <div class="p-3 flex flex-col flex-grow relative pointer-events-none"> 
+                        <!-- pointer-events-none на контенте, чтобы клики проходили сквозь текст на hitbox, 
+                             но кнопки внутри должны иметь pointer-events-auto -->
+                             
                         <div class="flex justify-between items-start mb-1">
                             <span class="text-[10px] font-bold uppercase tracking-wider opacity-60">${item.category || 'Лот'}</span>
                         </div>
-                        <h3 class="font-semibold text-sm leading-snug mb-1 line-clamp-2" onclick="openDetails('${item.id}')" style="cursor: pointer;">${item.title}</h3>
+                        <h3 class="font-semibold text-sm leading-snug mb-1 line-clamp-2">${item.title}</h3>
                         
+                        <!-- Блок наличия и локации -->
                         <div class="min-h-[1.5em] mt-1 flex flex-wrap items-center gap-2">
                             ${hasSpecificQty && !isSold ? 
                                 `<span class="text-[11px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded whitespace-nowrap">В наличии: ${qtyVal} шт.</span>` 
@@ -343,12 +365,12 @@
 
             currentDetailItem = item;
             
-            const imgSrc = item.image || 'https://placehold.co/300x300?text=No+Photo';
-            document.getElementById('detail-img').src = imgSrc;
+            document.getElementById('detail-img').src = item.image;
             document.getElementById('detail-title').innerText = item.title;
             document.getElementById('detail-price').innerText = (item.price_rub || '—') + ' ₽';
             document.getElementById('detail-price-eur').innerText = item.price_eur ? `${item.price_eur} €` : '';
             
+            // Наличие
             const qtyVal = parseInt(item.quantity) || 0;
             const hasSpecificQty = item.quantity && item.quantity.trim() !== "" && qtyVal > 0;
             const qtyEl = document.getElementById('detail-qty');
@@ -359,6 +381,7 @@
                 qtyEl.classList.add('hidden');
             }
 
+            // Локация
             const location = item.location || item.Location || item.loc || '';
             const locBadge = document.getElementById('detail-location-badge');
             if(location) {
@@ -370,6 +393,7 @@
                 locBadge.classList.remove('flex');
             }
 
+            // Описание
             const desc = item.description || item.Description || 'Описание отсутствует';
             document.getElementById('detail-desc').innerText = desc;
             
@@ -390,7 +414,7 @@
 
         window.viewFullImageFromDetails = () => {
             if(currentDetailItem) {
-                document.getElementById('modal-img-full').src = currentDetailItem.image || 'https://placehold.co/300x300?text=No+Photo';
+                document.getElementById('modal-img-full').src = currentDetailItem.image;
                 document.getElementById('image-modal').classList.add('active');
             }
         };
@@ -565,7 +589,6 @@
         };
         
         window.removeFromCart = (i) => { cart.splice(i, 1); updateCartUI(); renderCartItems(); };
-        
         function updateCartUI() {
             const b = document.getElementById('cart-badge');
             b.textContent = cart.length; b.classList.toggle('hidden', cart.length === 0);
@@ -622,7 +645,7 @@
         }
 
         function checkSold(item) { return item.status && (item.status.toLowerCase().includes('sold') || item.status.toLowerCase().includes('продано')); }
-        function getPrice(item, type = 'rub') { const val = type === 'rub' ? item.price_rub : item.price_eur; return parseInt((val || '0').toString().replace(/\D/g,'') || 0) || 0; }
+        function getPrice(item, type = 'rub') { const val = type === 'rub' ? item.price_rub : item.price_eur; return parseInt((val || '0').toString().replace(/\D/g,'')) || 0; }
         
         function showNotification(text, isError = false) { 
             const n = document.getElementById('notification'); 
@@ -640,3 +663,4 @@
     </script>
 </body>
 </html>
+

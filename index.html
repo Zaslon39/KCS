@@ -30,11 +30,17 @@
             padding-bottom: 90px;
         }
 
+        /* КАРТОЧКА */
         .card {
             background-color: var(--card-bg);
             border: 1px solid var(--tg-theme-section-separator-color, rgba(0,0,0,0.05));
             position: relative;
-            /* Убираем cursor: pointer здесь, так как клик теперь на отдельном слое */
+            cursor: pointer; 
+            z-index: 1;
+            transition: transform 0.1s;
+        }
+        .card:active {
+            transform: scale(0.98);
         }
 
         .sold-item { opacity: 0.6; order: 9999; }
@@ -50,32 +56,22 @@
             padding: 2px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        /* Hitbox - невидимый слой для клика */
-        .card-hitbox {
-            position: absolute;
-            inset: 0;
-            z-index: 10;
-            cursor: pointer;
-            -webkit-tap-highlight-color: rgba(0,0,0,0.05);
-        }
-        .card-hitbox:active {
-            background-color: rgba(0,0,0,0.05);
-        }
-
         .search-bar {
             background-color: var(--card-bg);
             border: 1px solid var(--tg-theme-section-separator-color, rgba(0,0,0,0.1));
             color: var(--text-color);
         }
 
+        /* ЗУМ ФОТО (Z-index выше всех) */
         #image-modal { 
-            background-color: rgba(0, 0, 0, 0.95); z-index: 10000; display: none;
+            background-color: rgba(0, 0, 0, 0.95); z-index: 100000; display: none;
             position: fixed; inset: 0; justify-content: center; align-items: center;
         }
         #image-modal.active { display: flex; }
         #modal-img-full { max-width: 100vw; max-height: 100vh; object-fit: contain; }
 
-        .bottom-sheet { position: fixed; inset: 0; z-index: 9000; display: none; }
+        /* ШТОРКА ДЕТАЛЕЙ */
+        .bottom-sheet { position: fixed; inset: 0; z-index: 99999; display: none; }
         .bottom-sheet.active { display: block; }
         
         .sheet-content {
@@ -85,7 +81,7 @@
             max-height: 90vh; 
             display: flex; flex-direction: column;
             transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 -5px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.3);
         }
         .bottom-sheet.active .sheet-content { transform: translateY(0); }
         
@@ -279,7 +275,7 @@
             });
         }
 
-        // --- ГЛАВНЫЙ РЕНДЕР КАТАЛОГА ---
+        // --- ГЛАВНЫЙ РЕНДЕР КАТАЛОГА (V23 Fix) ---
         function renderCatalog(items) {
             const container = document.getElementById('catalog');
             container.innerHTML = '';
@@ -302,35 +298,29 @@
                 const el = document.createElement('div');
                 el.className = `card rounded-xl overflow-hidden flex flex-col h-full ${isSold ? 'sold-item' : ''}`;
                 
-                // РЕШЕНИЕ:
-                // 1. Создаем card-hitbox (div), который накрывает всё (z-10).
-                // 2. Кнопки (сердце, корзина) делаем z-30, чтобы они были выше hitbox.
-                
-                el.innerHTML = `
-                    <!-- ХИТ-БОКС (КЛИК ПО КАРТОЧКЕ) -->
-                    <div class="card-hitbox" onclick="openDetails('${item.id}')"></div>
+                // ВАЖНО: Вешаем обработчик события через JS (самый надежный способ)
+                el.addEventListener('click', function(e) {
+                    console.log('Card Clicked:', item.id); // Для отладки
+                    openDetails(item.id);
+                });
 
+                el.innerHTML = `
                     <div class="relative w-full aspect-square bg-white border-b border-gray-100/10">
                         <img src="${img}" class="absolute inset-0 w-full h-full object-contain p-2" loading="lazy">
                         ${isNew && !isSold ? '<div class="ribbon"></div>' : ''}
                         ${isSold ? '<div class="absolute inset-0 flex items-center justify-center bg-black/10"><span class="bg-black/70 text-white px-2 py-1 rounded text-xs font-bold -rotate-12">SOLD</span></div>' : ''}
                         
-                        <!-- СЕРДЦЕ (Z-30, выше хитбокса) -->
-                        <button onclick="toggleFav('${item.id}', this)" class="absolute top-1 left-1 z-30 p-2 rounded-full bg-white/80 backdrop-blur-sm transition-colors active:scale-90 ${isFav ? 'text-red-500' : 'text-gray-400'} shadow-sm cursor-pointer">
+                        <button onclick="event.stopPropagation(); toggleFav('${item.id}', this)" class="absolute top-1 left-1 z-20 p-2 rounded-full bg-white/80 backdrop-blur-sm transition-colors active:scale-90 ${isFav ? 'text-red-500' : 'text-gray-400'} shadow-sm cursor-pointer hover:bg-white">
                             <i data-lucide="heart" class="w-6 h-6 ${isFav ? 'fill-current' : ''}"></i>
                         </button>
                     </div>
                     
-                    <div class="p-3 flex flex-col flex-grow relative pointer-events-none"> 
-                        <!-- pointer-events-none на контенте, чтобы клики проходили сквозь текст на hitbox, 
-                             но кнопки внутри должны иметь pointer-events-auto -->
-                             
+                    <div class="p-3 flex flex-col flex-grow relative"> 
                         <div class="flex justify-between items-start mb-1">
                             <span class="text-[10px] font-bold uppercase tracking-wider opacity-60">${item.category || 'Лот'}</span>
                         </div>
                         <h3 class="font-semibold text-sm leading-snug mb-1 line-clamp-2">${item.title}</h3>
                         
-                        <!-- Блок наличия и локации -->
                         <div class="min-h-[1.5em] mt-1 flex flex-wrap items-center gap-2">
                             ${hasSpecificQty && !isSold ? 
                                 `<span class="text-[11px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded whitespace-nowrap">В наличии: ${qtyVal} шт.</span>` 
@@ -348,7 +338,7 @@
                             </div>
                             
                             ${!isSold ? 
-                                `<button onclick="addToCart('${item.id}')" class="buy-btn w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform shadow-md z-30 cursor-pointer pointer-events-auto" style="background-color: var(--bg-color); color: var(--button-color)"><i data-lucide="plus" class="w-6 h-6"></i></button>` 
+                                `<button onclick="event.stopPropagation(); addToCart('${item.id}')" class="buy-btn w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform shadow-md z-20 cursor-pointer hover:opacity-90" style="background-color: var(--bg-color); color: var(--button-color)"><i data-lucide="plus" class="w-6 h-6"></i></button>` 
                                 : ''}
                         </div>
                     </div>
@@ -358,8 +348,9 @@
             lucide.createIcons();
         }
 
-        // --- ОТКРЫТИЕ ДЕТАЛЕЙ (Обязательно глобальная функция) ---
+        // --- ДЕТАЛИ ---
         window.openDetails = (itemId) => {
+            console.log("Opening details for:", itemId);
             const item = allProducts.find(p => p.id === itemId);
             if(!item) return;
 
@@ -370,7 +361,6 @@
             document.getElementById('detail-price').innerText = (item.price_rub || '—') + ' ₽';
             document.getElementById('detail-price-eur').innerText = item.price_eur ? `${item.price_eur} €` : '';
             
-            // Наличие
             const qtyVal = parseInt(item.quantity) || 0;
             const hasSpecificQty = item.quantity && item.quantity.trim() !== "" && qtyVal > 0;
             const qtyEl = document.getElementById('detail-qty');
@@ -381,7 +371,6 @@
                 qtyEl.classList.add('hidden');
             }
 
-            // Локация
             const location = item.location || item.Location || item.loc || '';
             const locBadge = document.getElementById('detail-location-badge');
             if(location) {
@@ -393,7 +382,6 @@
                 locBadge.classList.remove('flex');
             }
 
-            // Описание
             const desc = item.description || item.Description || 'Описание отсутствует';
             document.getElementById('detail-desc').innerText = desc;
             

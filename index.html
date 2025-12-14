@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -72,7 +71,6 @@
             background-color: rgba(0, 0, 0, 0.95); z-index: 10000; display: none;
             position: fixed; inset: 0; justify-content: center; align-items: center;
         }
-        #image-modal.active { display: flex; }
         #modal-img-full { max-width: 100vw; max-height: 100vh; object-fit: contain; }
 
         .bottom-sheet { position: fixed; inset: 0; z-index: 9000; display: none; }
@@ -154,7 +152,7 @@
             </div>
             
             <div class="overflow-y-auto flex-grow p-4">
-                <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-50 mb-4 border border-gray-100/10 cursor-pointer shadow-sm" onclick="viewFullImageFromDetails()">
+                <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-50 mb-4 border border-gray-100/10 cursor-pointer" onclick="viewFullImageFromDetails()">
                     <img id="detail-img" src="" class="w-full h-full object-contain p-2">
                     <div class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg backdrop-blur-sm pointer-events-none flex gap-1 items-center">
                         <i data-lucide="zoom-in" class="w-4 h-4"></i>
@@ -199,9 +197,9 @@
     </div>
 
     <!-- 2. ЗУМ -->
-    <div id="image-modal" onclick="closeImage()">
-        <img id="modal-img-full" src="" alt="Zoom">
-        <button class="absolute top-4 right-4 text-white bg-gray-800/50 p-2 rounded-full backdrop-blur-sm z-50">
+    <div id="image-modal" onclick="closeImage()" style="display: none;">
+        <img id="modal-img-full" src="" alt="Zoom" style="max-width: 100vw; max-height: 100vh; object-fit: contain;">
+        <button class="absolute top-4 right-4 text-white bg-gray-800/50 p-2 rounded-full backdrop-blur-sm" onclick="closeImage()">
             <i data-lucide="x" class="w-6 h-6"></i>
         </button>
     </div>
@@ -279,7 +277,6 @@
             });
         }
 
-        // --- ГЛАВНЫЙ РЕНДЕР КАТАЛОГА ---
         function renderCatalog(items) {
             const container = document.getElementById('catalog');
             container.innerHTML = '';
@@ -300,43 +297,25 @@
                 const location = item.location || item.Location || item.loc || item.city || '';
 
                 const el = document.createElement('div');
-		el.innerHTML = `
-    		<div class="card-hitbox" onclick="openDetails('${item.id}')"></div>
-    		<div class="relative w-full aspect-square bg-white border-b border-gray-100/10">
-       		<img src="${img}" onclick="openImage('${img}');" class="absolute inset-0 w-full h-full object-contain p-2" loading="lazy">
-       		 ...
-    		</div>
-		`;
-                
-                // РЕШЕНИЕ:
-                // 1. Создаем card-hitbox (div), который накрывает всё (z-10).
-                // 2. Кнопки (сердце, корзина) делаем z-30, чтобы они были выше hitbox.
+                el.className = `card rounded-xl overflow-hidden flex flex-col h-full ${isSold ? 'sold-item' : ''}`;
                 
                 el.innerHTML = `
-                    <!-- ХИТ-БОКС (КЛИК ПО КАРТОЧКЕ) -->
                     <div class="card-hitbox" onclick="openDetails('${item.id}')"></div>
-
                     <div class="relative w-full aspect-square bg-white border-b border-gray-100/10">
-                        <img src="${img}" class="absolute inset-0 w-full h-full object-contain p-2" loading="lazy">
+                        <img src="${img}" onclick="openImage('${img}');" class="absolute inset-0 w-full h-full object-contain p-2" loading="lazy">
                         ${isNew && !isSold ? '<div class="ribbon"></div>' : ''}
                         ${isSold ? '<div class="absolute inset-0 flex items-center justify-center bg-black/10"><span class="bg-black/70 text-white px-2 py-1 rounded text-xs font-bold -rotate-12">SOLD</span></div>' : ''}
-                        
-                        <!-- СЕРДЦЕ (Z-30, выше хитбокса) -->
                         <button onclick="toggleFav('${item.id}', this)" class="absolute top-1 left-1 z-30 p-2 rounded-full bg-white/80 backdrop-blur-sm transition-colors active:scale-90 ${isFav ? 'text-red-500' : 'text-gray-400'} shadow-sm cursor-pointer">
                             <i data-lucide="heart" class="w-6 h-6 ${isFav ? 'fill-current' : ''}"></i>
                         </button>
                     </div>
                     
                     <div class="p-3 flex flex-col flex-grow relative pointer-events-none"> 
-                        <!-- pointer-events-none на контенте, чтобы клики проходили сквозь текст на hitbox, 
-                             но кнопки внутри должны иметь pointer-events-auto -->
-                             
                         <div class="flex justify-between items-start mb-1">
                             <span class="text-[10px] font-bold uppercase tracking-wider opacity-60">${item.category || 'Лот'}</span>
                         </div>
                         <h3 class="font-semibold text-sm leading-snug mb-1 line-clamp-2">${item.title}</h3>
                         
-                        <!-- Блок наличия и локации -->
                         <div class="min-h-[1.5em] mt-1 flex flex-wrap items-center gap-2">
                             ${hasSpecificQty && !isSold ? 
                                 `<span class="text-[11px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded whitespace-nowrap">В наличии: ${qtyVal} шт.</span>` 
@@ -364,7 +343,7 @@
             lucide.createIcons();
         }
 
-        // --- ОТКРЫТИЕ ДЕТАЛЕЙ (Обязательно глобальная функция) ---
+        // --- ОТКРЫТИЕ ДЕТАЛЕЙ ---
         window.openDetails = (itemId) => {
             const item = allProducts.find(p => p.id === itemId);
             if(!item) return;
@@ -421,9 +400,14 @@
         window.viewFullImageFromDetails = () => {
             if(currentDetailItem) {
                 document.getElementById('modal-img-full').src = currentDetailItem.image;
-                document.getElementById('image-modal').classList.add('active');
+                document.getElementById('image-modal').style.display = 'flex';
             }
         };
+
+        function openImage(imgSrc) {
+            document.getElementById('modal-img-full').src = imgSrc;
+            document.getElementById('image-modal').style.display = 'flex';
+        }
 
         window.addToCartFromDetails = () => {
             if(currentDetailItem) {
@@ -557,83 +541,8 @@
             tg.openTelegramLink(url);
         };
 
-        window.closeImage = () => document.getElementById('image-modal').classList.remove('active');
-        window.toggleTheme = () => { document.documentElement.classList.toggle('dark'); updateThemeIcon(); };
-
-        function updateThemeIcon() {
-            const isDark = document.documentElement.classList.contains('dark');
-            const icon = document.getElementById('theme-icon');
-            icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
-            const root = document.documentElement;
-            if (isDark) {
-                root.style.setProperty('--bg-color', '#1c1c1e'); root.style.setProperty('--card-bg', '#2c2c2e');
-                root.style.setProperty('--text-color', '#ffffff'); root.style.setProperty('--hint-color', '#8e8e93');
-                root.style.setProperty('--tg-theme-section-separator-color', '#3a3a3c');
-            } else {
-                root.style.setProperty('--bg-color', '#f3f4f6'); root.style.setProperty('--card-bg', '#ffffff');
-                root.style.setProperty('--text-color', '#000000'); root.style.setProperty('--hint-color', '#9ca3af');
-                root.style.setProperty('--tg-theme-section-separator-color', '#e5e7eb');
-            }
-            lucide.createIcons();
-        }
-
-        window.addToCart = (id) => {
-            const item = allProducts.find(p => p.id === id);
-            if(checkSold(item)) return;
-
-            const currentQtyInCart = cart.filter(x => x.id === id).length;
-            const maxQty = parseInt(item.quantity) || 1;
-
-            if (currentQtyInCart >= maxQty) {
-                showNotification(`Доступно только ${maxQty} шт.`, true); 
-                return;
-            }
-
-            cart.push(item); 
-            updateCartUI(); 
-            showNotification("Добавлено", false);
-        };
-        
-        window.removeFromCart = (i) => { cart.splice(i, 1); updateCartUI(); renderCartItems(); };
-        function updateCartUI() {
-            const b = document.getElementById('cart-badge');
-            b.textContent = cart.length; b.classList.toggle('hidden', cart.length === 0);
-        }
-        window.openCart = () => { document.getElementById('cart-modal').classList.add('active'); renderCartItems(); };
-        window.closeCart = () => document.getElementById('cart-modal').classList.remove('active');
-
-        function renderCartItems() {
-            const c = document.getElementById('cart-items');
-            if (!cart.length) { c.innerHTML = '<p class="text-center py-10 opacity-50">Корзина пуста</p>'; document.getElementById('total-rub').innerText = '0 ₽'; return; }
-            let sr = 0, se = 0;
-            
-            c.innerHTML = cart.map((item, i) => {
-                sr += getPrice(item); se += getPrice(item, 'eur');
-                return `<div class="flex gap-3 items-center p-2 rounded-lg border border-gray-100/10 bg-gray-50/5"><img src="${item.image}" class="w-12 h-12 object-contain bg-white rounded"><div class="flex-grow min-w-0"><div class="text-sm font-medium truncate">${item.title}</div><div class="text-xs opacity-70">${item.price_rub} ₽</div></div><button onclick="removeFromCart(${i})" class="p-2 text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
-            }).join('');
-            document.getElementById('total-rub').innerText = sr + ' ₽'; document.getElementById('total-eur').innerText = se + ' €';
-            lucide.createIcons();
-        }
-
-        window.checkout = () => {
-            if(!cart.length) return;
-            const grouped = {};
-            let total = 0;
-            
-            cart.forEach(item => {
-                if(!grouped[item.title]) grouped[item.title] = { count: 0, price: getPrice(item) };
-                grouped[item.title].count++;
-                total += getPrice(item);
-            });
-
-            let msg = `👋 Здравствуйте, @${ADMIN}!\n\nЗаказ:\n`;
-            let idx = 1;
-            for (const [title, data] of Object.entries(grouped)) {
-                msg += `${idx}. ${title} — ${data.count} шт. (${data.price * data.count}₽)\n`;
-                idx++;
-            }
-            msg += `\n💰 ИТОГО: ${total}₽`;
-            tg.openTelegramLink(`https://t.me/${ADMIN}?text=${encodeURIComponent(msg)}`);
+        window.closeImage = () => {
+            document.getElementById('image-modal').style.display = 'none';
         };
 
         function sortCatalog() {
@@ -666,37 +575,21 @@
         }
 
         init();
-	window.closeImage = () => {
-    	document.getElementById('image-modal').style.display = 'none';
-	};
 
-	window.viewFullImageFromDetails = () => {
-    	if (currentDetailItem) {
-        document.getElementById('modal-img-full').src = currentDetailItem.image;
-        document.getElementById('image-modal').style.display = 'flex';
-    	}
-	};
-
-	function openDetails(itemId) {
-    // Остальной код функции openDetails...
-    document.getElementById('detail-img').src = item.image; // Это уже есть в вашем коде
-	}
-
-	function openImage(imgSrc) {
-   	 document.getElementById('modal-img-full').src = imgSrc;
-    	document.getElementById('image-modal').style.display = 'flex';
-	}
+        // Добавлено
+        function openImage(imgSrc) {
+            document.getElementById('modal-img-full').src = imgSrc;
+            document.getElementById('image-modal').style.display = 'flex';
+        }
     </script>
 
-<!-- Модальное окно для изображения -->
-<div id="image-modal" onclick="closeImage()" style="display: none; position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.95); justify-content: center; align-items: center; z-index: 10000;">
-    <img id="modal-img-full" src="" alt="Zoom" style="max-width: 100vw; max-height: 100vh; object-fit: contain;">
-    <button class="absolute top-4 right-4 text-white bg-gray-800/50 p-2 rounded-full backdrop-blur-sm z-50" onclick="closeImage()">
-        <i data-lucide="x" class="w-6 h-6"></i>
-    </button>
-</div>
+    <!-- Модальное окно для изображения -->
+    <div id="image-modal" onclick="closeImage()" style="display: none; position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.95); justify-content: center; align-items: center; z-index: 10000;">
+        <img id="modal-img-full" src="" alt="Zoom" style="max-width: 100vw; max-height: 100vh; object-fit: contain;">
+        <button class="absolute top-4 right-4 text-white bg-gray-800/50 p-2 rounded-full backdrop-blur-sm z-50" onclick="closeImage()">
+            <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+    </div>
 
 </body>
 </html>
-
-

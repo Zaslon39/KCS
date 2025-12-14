@@ -673,6 +673,117 @@
         // Закрытие изображения
         window.closeImage = () => document.getElementById('image-modal').classList.remove('active');
 
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Konigsberg Collection Store</title>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #f3f4f6);
+            --text-color: var(--tg-theme-text-color, #000000);
+            --card-bg: var(--tg-theme-secondary-bg-color, #ffffff);
+            --hint-color: var(--tg-theme-hint-color, #9ca3af);
+            --button-color: var(--tg-theme-button-color, #3b82f6);
+            --button-text: var(--tg-theme-button-text-color, #ffffff);
+            --input-bg: rgba(0,0,0,0.05);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            padding-bottom: 90px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--tg-theme-section-separator-color, rgba(0,0,0,0.05));
+            position: relative;
+        }
+
+        #image-modal { 
+            background-color: rgba(0, 0, 0, 0.95); 
+            z-index: 10000; 
+            display: none;
+            position: fixed; 
+            inset: 0; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        #image-modal.active { display: flex; }
+        #modal-img-full { 
+            max-width: 100vw; 
+            max-height: 100vh; 
+            object-fit: contain; 
+        }
+    </style>
+</head>
+<body class="p-3 select-none">
+
+    <div id="catalog" class="grid grid-cols-2 gap-3 mt-2 pb-10">
+        <div class="loader col-span-2"></div>
+    </div>
+
+    <!-- Модальное окно для увеличенного изображения -->
+    <div id="image-modal" onclick="closeImage()">
+        <img id="modal-img-full" src="" alt="Zoom" />
+        <button class="absolute top-4 right-4 text-white bg-gray-800/50 p-2 rounded-full backdrop-blur-sm z-50" onclick="closeImage()">
+            <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+    </div>
+
+    <script>
+        // Пример списка монет
+        const items = [
+            {id: '1', title: 'Монета 1', image: 'https://placehold.co/300x300?text=Монета+1'},
+            {id: '2', title: 'Монета 2', image: 'https://placehold.co/300x300?text=Монета+2'},
+            {id: '3', title: 'Монета 3', image: 'https://placehold.co/300x300?text=Монета+3'}
+        ];
+
+        function renderCatalog(items) {
+            const container = document.getElementById('catalog');
+            container.innerHTML = '';
+
+            items.forEach(item => {
+                const img = item.image || 'https://placehold.co/300x300?text=No+Photo';
+                const el = document.createElement('div');
+                el.className = 'card rounded-xl overflow-hidden flex flex-col h-full';
+
+                // Добавляем обработчик нажатия на изображение
+                el.innerHTML = `
+                    <img src="${img}" class="card-img" onclick="viewFullImage('${img}')" loading="lazy"> 
+                    <h3 class="font-semibold text-sm leading-snug mb-1">${item.title}</h3>
+                `;
+
+                container.appendChild(el);
+            });
+        }
+
+        // Функция открытия большого изображения
+        function viewFullImage(imageUrl) {
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-img-full');
+
+            modalImg.src = imageUrl; // Устанавливаем ссылку на изображение
+            modal.classList.add('active'); // Показываем модальное окно
+        }
+
+        // Закрыть модальное окно
+        window.closeImage = () => {
+            document.getElementById('image-modal').classList.remove('active');
+        };
+
+        // Инициализируем каталог
+        renderCatalog(items);
 
     </script>
 </body>

@@ -307,9 +307,9 @@
                 // 2. Кнопки (сердце, корзина) делаем z-30, чтобы они были выше hitbox.
                 
                 el.innerHTML = `
-                    <!-- ХИТ-БОКС (КЛИК ПО КАРТОЧКЕ) -->
-                    <div class="card-hitbox" onclick="openDetails('${item.id}')"></div>
-
+    		<div class="card-hitbox" onclick="openDetails('${item.id}')"></div>
+    		<img src="${img}" class="card-img" onclick="viewFullImage('${img}')" loading="lazy"> 
+		`;
                     <div class="relative w-full aspect-square bg-white border-b border-gray-100/10">
                         <img src="${img}" class="absolute inset-0 w-full h-full object-contain p-2" loading="lazy">
                         ${isNew && !isSold ? '<div class="ribbon"></div>' : ''}
@@ -660,7 +660,22 @@
         }
 
         init();
+
+		 // Открытие изображения в модальном окне
+        function viewFullImage(imageUrl) {
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-img-full');
+
+            modalImg.src = imageUrl; // Устанавливаем изображение
+            modal.classList.add('active'); // Открываем модальное окно
+        }
+
+        // Закрытие изображения
+        window.closeImage = () => document.getElementById('image-modal').classList.remove('active');
+
+
     </script>
 </body>
 </html>
+
 

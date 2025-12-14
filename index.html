@@ -184,7 +184,7 @@
     </div>
 
     <!-- 2. ЗУМ -->
-    <div id="image-modal" onclick="closeImage()" style="display: none; position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.95); justify-content: center; align-items: center; z-index: 10000;">
+    <div id="image-modal" onclick="closeImage()" style="display: none;">
         <img id="modal-img-full" src="" alt="Zoom" style="max-width: 100vw; max-height: 100vh; object-fit: contain;">
         <button class="absolute top-4 right-4 text-white bg-gray-800/50 p-2 rounded-full backdrop-blur-sm" onclick="closeImage()">
             <i data-lucide="x" class="w-6 h-6"></i>
@@ -320,7 +320,7 @@
             lucide.createIcons();
         }
 
-        // --- ОТКРЫТИЕ ДЕТАЛЕЙ ---
+        // Открытие деталей товара
         window.openDetails = (itemId) => {
             const item = allProducts.find(p => p.id === itemId);
             if(!item) return;
@@ -383,12 +383,75 @@
             document.getElementById('image-modal').style.display = 'flex';
         }
 
+        // Добавление товара в корзину
+        function addToCart(itemId) {
+            const item = allProducts.find(p => p.id === itemId);
+            if(!item || checkSold(item)) return; // Не добавляем sold items
+            
+            const existingItem = cart.find(cartItem => cartItem.id === itemId);
+            if(existingItem) {
+                existingItem.quantity += 1; // Увеличиваем количество при повторном добавлении
+            } else {
+                cart.push({...item, quantity: 1}); // Добавляем новый товар с количеством 1
+            }
+            updateCartUI();
+            showNotification("Товар добавлен в корзину!");
+        }
+
         window.addToCartFromDetails = () => {
             if(currentDetailItem) {
                 addToCart(currentDetailItem.id);
                 closeDetails();
             }
         };
+
+        function updateCartUI() {
+            const cartBadge = document.getElementById('cart-badge');
+            cartBadge.textContent = cart.length;
+            cartBadge.classList.toggle('hidden', cart.length === 0);
+        }
+
+        function openCart() {
+            document.getElementById('cart-modal').classList.add('active'); 
+            renderCartItems();
+        }
+
+        function closeCart() {
+            document.getElementById('cart-modal').classList.remove('active');
+        }
+
+        function renderCartItems() {
+            const cartItemsContainer = document.getElementById('cart-items');
+            cartItemsContainer.innerHTML = '';
+
+            if (!cart.length) {
+                cartItemsContainer.innerHTML = '<p class="text-center py-10 opacity-50">Корзина пуста</p>';
+                document.getElementById('total-rub').innerText = '0 ₽';
+                document.getElementById('total-eur').innerText = '0 €';
+                return;
+            }
+
+            let totalRub = 0;
+            let totalEur = 0;
+
+            cart.forEach(item => {
+                totalRub += getPrice(item, 'rub') * item.quantity;
+                totalEur += getPrice(item, 'eur') * item.quantity;
+
+                cartItemsContainer.innerHTML += `
+                    <div class="flex gap-3 items-center p-2 rounded-lg border border-gray-100/10 bg-gray-50/5">
+                        <img src="${item.image}" class="w-12 h-12 object-contain bg-white rounded">
+                        <div class="flex-grow min-w-0">
+                            <div class="text-sm font-medium truncate">${item.title}</div>
+                            <div class="text-xs opacity-70">${item.price_rub} ₽</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('total-rub').innerText = totalRub + ' ₽';
+            document.getElementById('total-eur').innerText = totalEur + ' €';
+        }
 
         function handleSearch() {
             const q = document.getElementById('search-input').value.toLowerCase().trim();

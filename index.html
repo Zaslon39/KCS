@@ -463,6 +463,7 @@
                 cart.splice(index, 1); // Удаляем товар из корзины
                 updateCartUI();
                 renderCartItems(); // Обновляем отображение корзины
+                showNotification("Товар удален из корзины");
             }
         }
 
@@ -472,11 +473,10 @@
                 return;
             }
 
-            const orderDetails = cart.map(item => `${item.quantity} x ${item.title} (${item.price_rub * item.quantity}₽)`).join('\n');
+            const orderDetails = cart.map(item => `${item.title} (${item.price_rub * item.quantity}₽)`).join('\n');
             const totalRub = cart.reduce((acc, item) => acc + getPrice(item, 'rub') * item.quantity, 0);
             const totalEur = cart.reduce((acc, item) => acc + getPrice(item, 'eur') * item.quantity, 0);
-
-            const message = `👋 Здравствуйте, @${ADMIN}!\n\nЗаказ:\n${orderDetails}\n\n💰 ИТОГО: ${totalRub}₽\n💰 ДЛЯ ЕС ИТОГО: ${totalEur}€`;
+            const message = `👋 Здравствуйте, @${ADMIN}!\n\nЗаказ:\n${orderDetails}\n\n💰 ИТОГО: ${totalRub}₽\n💰 ДЛЯ ЕС ИТОГО: ${totalEur} €`;
 
             const url = `https://t.me/${ADMIN}?start=order&text=${encodeURIComponent(message)}`;
             tg.openTelegramLink(url);

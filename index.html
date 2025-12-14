@@ -407,7 +407,7 @@
 
         function updateCartUI() {
             const cartBadge = document.getElementById('cart-badge');
-            cartBadge.textContent = cart.length;
+            cartBadge.textContent = cart.reduce((acc, item) => acc + item.quantity, 0); // Обновляем количество в значке
             cartBadge.classList.toggle('hidden', cart.length === 0);
         }
 
@@ -443,14 +443,43 @@
                         <img src="${item.image}" class="w-12 h-12 object-contain bg-white rounded">
                         <div class="flex-grow min-w-0">
                             <div class="text-sm font-medium truncate">${item.title}</div>
-                            <div class="text-xs opacity-70">${item.price_rub} ₽</div>
+                            <div class="text-xs opacity-70">${item.price_rub} ₽ × ${item.quantity}</div>
                         </div>
+                        <button onclick="removeFromCart('${item.id}')" class="text-red-500 hover:text-red-700">
+                            <i data-lucide="trash" class="w-5 h-5"></i>
+                        </button>
                     </div>
                 `;
             });
 
             document.getElementById('total-rub').innerText = totalRub + ' ₽';
             document.getElementById('total-eur').innerText = totalEur + ' €';
+        }
+
+        function removeFromCart(itemId) {
+            const itemIndex = cart.findIndex(item => item.id === itemId);
+            if(itemIndex > -1) {
+                cart.splice(itemIndex, 1); // Удаляем товар из корзины
+                updateCartUI(); // Обновляем интерфейс корзины
+                renderCartItems(); // Перерисовываем товары в корзине
+            }
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                showNotification("Корзина пуста!"); return;
+            }
+            
+            let message = `👋 Здравствуйте, @${ADMIN}!\n\nЗаказ:\n`;
+            cart.forEach(item => {
+                message += `- ${item.title} (${item.price_rub * item.quantity}₽)\n`;
+            });
+            const totalRub = cart.reduce((acc, item) => acc + (getPrice(item, 'rub') * item.quantity), 0);
+            const totalEur = cart.reduce((acc, item) => acc + (getPrice(item, 'eur') * item.quantity), 0);
+            message += `\n💰 ИТОГО: ${totalRub}₽\n💰 ДЛЯ ЕС ИТОГО: ${totalEur} €`;
+            
+            const url = `https://t.me/sendMessage?chat_id=${tg.user.id}&text=${encodeURIComponent(message)}`;
+            tg.openTelegramLink(url); // открываем ссылку на Telegram для отправки сообщения
         }
 
         function handleSearch() {

@@ -300,7 +300,13 @@
                 const location = item.location || item.Location || item.loc || item.city || '';
 
                 const el = document.createElement('div');
-                el.className = `card rounded-xl overflow-hidden flex flex-col h-full ${isSold ? 'sold-item' : ''}`;
+		el.innerHTML = `
+    		<div class="card-hitbox" onclick="openDetails('${item.id}')"></div>
+    		<div class="relative w-full aspect-square bg-white border-b border-gray-100/10">
+       		<img src="${img}" onclick="openImage('${img}');" class="absolute inset-0 w-full h-full object-contain p-2" loading="lazy">
+       		 ...
+    		</div>
+		`;
                 
                 // РЕШЕНИЕ:
                 // 1. Создаем card-hitbox (div), который накрывает всё (z-10).
@@ -660,7 +666,37 @@
         }
 
         init();
+	window.closeImage = () => {
+    	document.getElementById('image-modal').style.display = 'none';
+	};
+
+	window.viewFullImageFromDetails = () => {
+    	if (currentDetailItem) {
+        document.getElementById('modal-img-full').src = currentDetailItem.image;
+        document.getElementById('image-modal').style.display = 'flex';
+    	}
+	};
+
+	function openDetails(itemId) {
+    // Остальной код функции openDetails...
+    document.getElementById('detail-img').src = item.image; // Это уже есть в вашем коде
+	}
+
+	function openImage(imgSrc) {
+   	 document.getElementById('modal-img-full').src = imgSrc;
+    	document.getElementById('image-modal').style.display = 'flex';
+	}
     </script>
+
+<!-- Модальное окно для изображения -->
+<div id="image-modal" onclick="closeImage()" style="display: none; position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.95); justify-content: center; align-items: center; z-index: 10000;">
+    <img id="modal-img-full" src="" alt="Zoom" style="max-width: 100vw; max-height: 100vh; object-fit: contain;">
+    <button class="absolute top-4 right-4 text-white bg-gray-800/50 p-2 rounded-full backdrop-blur-sm z-50" onclick="closeImage()">
+        <i data-lucide="x" class="w-6 h-6"></i>
+    </button>
+</div>
+
 </body>
 </html>
+
 

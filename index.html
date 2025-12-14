@@ -378,11 +378,6 @@
             }
         };
 
-        function openImage(imgSrc) {
-            document.getElementById('modal-img-full').src = imgSrc;
-            document.getElementById('image-modal').style.display = 'flex';
-        }
-
         // Добавление товара в корзину
         function addToCart(itemId) {
             const item = allProducts.find(p => p.id === itemId);

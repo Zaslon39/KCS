@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Konigsberg Collection Store</title>
-    
+
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -18,7 +19,7 @@
             --hint-color: var(--tg-theme-hint-color, #9ca3af);
             --button-color: var(--tg-theme-button-color, #3b82f6);
             --button-text: var(--tg-theme-button-text-color, #ffffff);
-            --input-bg: rgba(0,0,0,0.05);
+            --input-bg: rgba(0, 0, 0, 0.05);
         }
 
         body {
@@ -31,81 +32,311 @@
 
         .card {
             background-color: var(--card-bg);
-            border: 1px solid var(--tg-theme-section-separator-color, rgba(0,0,0,0.05));
+            border: 1px solid var(--tg-theme-section-separator-color, rgba(0, 0, 0, 0.05));
             position: relative;
         }
 
-        .sold-item { opacity: 0.6; order: 9999; }
-        .sold-item img { filter: grayscale(100%); }
-        .sold-item .buy-btn { display: none; }
+        .sold-item {
+            opacity: 0.6;
+            order: 9999;
+        }
+
+        .sold-item img {
+            filter: grayscale(100%);
+        }
+
+        .sold-item .buy-btn {
+            display: none;
+        }
 
         .ribbon {
-            position: absolute; top: 0; right: 0; width: 50px; height: 50px; overflow: hidden; z-index: 5; pointer-events: none;
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50px;
+            height: 50px;
+            overflow: hidden;
+            z-index: 5;
+            pointer-events: none;
         }
+
         .ribbon::before {
-            content: "NEW"; position: absolute; top: 10px; right: -16px; transform: rotate(45deg);
-            background-color: #ef4444; color: white; text-align: center; font-size: 9px; font-weight: bold;
-            padding: 2px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            content: "NEW";
+            position: absolute;
+            top: 10px;
+            right: -16px;
+            transform: rotate(45deg);
+            background-color: #ef4444;
+            color: white;
+            text-align: center;
+            font-size: 9px;
+            font-weight: bold;
+            padding: 2px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .search-bar {
             background-color: var(--card-bg);
-            border: 1px solid var(--tg-theme-section-separator-color, rgba(0,0,0,0.1));
+            border: 1px solid var(--tg-theme-section-separator-color, rgba(0, 0, 0, 0.1));
             color: var(--text-color);
         }
 
-        #image-modal { 
-            background-color: rgba(0, 0, 0, 0.95); z-index: 10000; display: none; position: fixed; inset: 0; justify-content: center; align-items: center;
-        }
-        #modal-img-full { max-width: 100vw; max-height: 100vh; object-fit: contain; }
+        /* #image-modal {
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            display: none;
+            position: fixed;
+            inset: 0;
+            justify-content: center;
+            align-items: center;
+        } */
 
-        .bottom-sheet { position: fixed; inset: 0; z-index: 9000; display: none; }
-        .bottom-sheet.active { display: block; }
-        
-        .sheet-content {
-            position: absolute; bottom: 0; left: 0; right: 0;
-            background-color: var(--card-bg);
-            border-top-left-radius: 20px; border-top-right-radius: 20px;
-            max-height: 90vh; 
-            display: flex; flex-direction: column;
-            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 -5px 30px rgba(0,0,0,0.2);
+        #modal-img-full {
+            max-width: 100vw;
+            max-height: 100vh;
+            object-fit: contain;
         }
-        .bottom-sheet.active .sheet-content { transform: translateY(0); }
+
+        .bottom-sheet {
+            position: fixed;
+            inset: 0;
+            z-index: 9000;
+            display: none;
+        }
+
+        .bottom-sheet.active {
+            display: block;
+        }
+
+        .sheet-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .bottom-sheet.active .sheet-content {
+            transform: translateY(0);
+        }
 
         .loader {
-            border: 3px solid var(--hint-color); border-top: 3px solid var(--button-color);
-            border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 40px auto;
+            border: 3px solid var(--hint-color);
+            border-top: 3px solid var(--button-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 40px auto;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        #image-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #image-modal img {
+            max-width: 95vw;
+            max-height: 95vh;
+            object-fit: contain;
+            border: 2px solid white;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+
+        #item-modal {
+            display: none;
+        }
+
+        #item-modal:not(.hidden) {
+            display: flex;
+        }
+
+        .card-hitbox {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            cursor: pointer;
+        }
     </style>
 </head>
-<body class="p-3 select-none">
 
-    <header class="sticky top-0 z-40 pt-2 pb-2 -mx-3 px-3 backdrop-blur-md bg-[var(--bg-color)]/95 border-b border-[var(--tg-theme-section-separator-color)]">
+<body class="p-3 select-none">
+    <div id="image-modal" onclick="maybeCloseImage(event)" style="
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.9);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    cursor: grab;
+    overflow: hidden;
+">
+        <button onclick="closeImageDirect(); event.stopPropagation();" style="
+    background-color: rgba(0,0,0,0.6);
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
+">
+            <span style="position: relative; top: -2px;">×</span>
+        </button>
+        <div style="position: relative; width: 100%; height: 100%;">
+
+            <!-- Контейнер для кнопок -->
+            <div style="
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* Расстояние между кнопками */
+            z-index: 1001;
+        ">
+                <!-- Кнопка увеличения -->
+                <button id="zoom-in-btn" onclick="zoomImage(0.2); event.stopPropagation();" style="
+                background-color: rgba(0,0,0,0.6);
+                color: white;
+                border: none;
+                border-radius: 8px; /* <-- Небольшой border radius */
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            ">
+                    <span style="position: relative; top: -2px"> +</span>
+                </button>
+
+                <!-- Кнопка уменьшения -->
+                <button id="zoom-out-btn" onclick="zoomImage(-0.2); event.stopPropagation();" style="
+                background-color: rgba(0,0,0,0.6);
+                color: white;
+                border: none;
+                border-radius: 8px; /* <-- Небольшой border radius */
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            "><span style="position: relative; top: -2px">–</span></button>
+
+                <!-- Кнопка сброса масштаба -->
+                <button id="reset-zoom-btn" onclick="resetZoom(); event.stopPropagation();" style="
+                background-color: rgba(0,0,0,0.6);
+                color: white;
+                border: none;
+                border-radius: 8px; /* <-- Небольшой border radius */
+                width: 40px;
+                height: 40px;
+                font-size: 14px;
+                cursor: pointer;
+            "><span style="position: relative; top: -2px">↺</span></button>
+            </div>
+
+            <!-- Изображение -->
+            <img id="modal-img-full" alt="Увеличенное изображение" style="
+            max-width: 95vw;
+            max-height: 95vh;
+            object-fit: contain;
+            border: 2px solid white;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            transform-origin: center center;
+            transition: transform 0.1s ease;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(var(--current-scale, 1));
+            cursor: grab;
+        " onmousedown="startDrag(event)" ontouchstart="startTouchDrag(event)"
+                onwheel="handleWheel(event); event.stopPropagation();" draggable="false">
+        </div>
+    </div>
+
+    <header
+        class="sticky top-0 z-40 pt-2 pb-2 -mx-3 px-3 backdrop-blur-md bg-[var(--bg-color)]/95 border-b border-[var(--tg-theme-section-separator-color)]">
         <div class="flex justify-between items-center mb-3">
             <h1 class="text-lg font-bold truncate pr-2">Konigsberg Collection</h1>
             <div class="flex items-center gap-2">
                 <button onclick="toggleTheme()" class="p-2 rounded-full active:bg-gray-200/20">
                     <i id="theme-icon" data-lucide="moon" class="w-6 h-6" style="color: var(--text-color)"></i>
                 </button>
-                <button onclick="toggleFavView()" id="fav-btn-header" class="p-2 rounded-full active:bg-gray-200/20 relative">
+                <button onclick="toggleFavView()" id="fav-btn-header"
+                    class="p-2 rounded-full active:bg-gray-200/20 relative">
                     <i id="fav-icon-header" data-lucide="heart" class="w-6 h-6" style="color: var(--text-color)"></i>
-                    <span id="fav-badge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+                    <span id="fav-badge"
+                        class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
                 </button>
                 <div onclick="openCart()" class="relative p-2 rounded-full active:bg-gray-200/20 cursor-pointer">
                     <i data-lucide="shopping-cart" class="w-6 h-6" style="color: var(--text-color)"></i>
-                    <span id="cart-badge" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+                    <span id="cart-badge"
+                        class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
                 </div>
             </div>
         </div>
 
         <div class="mb-3 relative">
             <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-gray-400"></i>
-            <input type="text" id="search-input" oninput="handleSearch()" placeholder="Поиск монет..." class="search-bar w-full rounded-xl py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/50">
+            <input type="text" id="search-input" oninput="handleSearch()" placeholder="Поиск монет..."
+                class="search-bar w-full rounded-xl py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/50">
         </div>
 
         <div class="flex justify-between items-center px-1 mb-2 gap-2">
@@ -118,7 +349,8 @@
                     <option value="price_desc">Цена: max</option>
                     <option value="alpha">А-Я</option>
                 </select>
-                <button class="p-1.5 rounded bg-[var(--card-bg)] border border-[var(--hint-color)]"><i data-lucide="arrow-up-down" class="w-4 h-4 text-[var(--text-color)]"></i></button>
+                <button class="p-1.5 rounded bg-[var(--card-bg)] border border-[var(--hint-color)]"><i
+                        data-lucide="arrow-up-down" class="w-4 h-4 text-[var(--text-color)]"></i></button>
             </div>
         </div>
     </header>
@@ -135,27 +367,34 @@
         <div class="sheet-content h-[90vh]">
             <div class="p-4 flex justify-between items-center border-b border-gray-100/10 shrink-0">
                 <span class="text-xs font-bold text-[var(--hint-color)]">ДЕТАЛИ</span>
-                <button onclick="closeDetails()" class="p-1 rounded-full bg-gray-200/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button onclick="closeDetails()" class="p-1 rounded-full bg-gray-200/20"><i data-lucide="x"
+                        class="w-5 h-5"></i></button>
             </div>
-            
+
             <div class="overflow-y-auto flex-grow p-4">
-                <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-50 mb-4 border border-gray-100/10 cursor-pointer" onclick="viewFullImageFromDetails()">
-                    <img id="detail-img" src="" class="w-full h-full object-contain p-2">
-                    <div class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg backdrop-blur-sm pointer-events-none flex gap-1 items-center">
+                <div
+                    class="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-50 mb-4 border border-gray-100/10 cursor-pointer">
+                    <img id="detail-img" src="" class="w-full h-full object-contain p-2"
+                        onclick="viewFullImageFromDetails(); event.stopPropagation();">
+                    <div
+                        class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg backdrop-blur-sm pointer-events-none flex gap-1 items-center">
                         <i data-lucide="zoom-in" class="w-4 h-4"></i>
                     </div>
                 </div>
-                
+
                 <div class="flex justify-between items-start mb-2 gap-3">
                     <h2 id="detail-title" class="text-lg font-bold leading-snug"></h2>
-                    <button id="detail-fav-btn" onclick="toggleDetailFav()" class="p-2 rounded-full border border-gray-200/20 flex-shrink-0 transition-all active:scale-95">
+                    <button id="detail-fav-btn" onclick="toggleDetailFav()"
+                        class="p-2 rounded-full border border-gray-200/20 flex-shrink-0 transition-all active:scale-95">
                         <i data-lucide="heart" class="w-6 h-6"></i>
                     </button>
                 </div>
 
                 <div class="flex flex-wrap gap-2 mb-3 text-sm">
-                    <span id="detail-qty" class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded hidden"></span>
-                    <span id="detail-location-badge" class="text-xs font-medium text-[var(--hint-color)] bg-[var(--input-bg)] px-2 py-1 rounded flex items-center gap-1 hidden">
+                    <span id="detail-qty"
+                        class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded hidden"></span>
+                    <span id="detail-location-badge"
+                        class="text-xs font-medium text-[var(--hint-color)] bg-[var(--input-bg)] px-2 py-1 rounded flex items-center gap-1 hidden">
                         <i data-lucide="map-pin" class="w-3 h-3"></i> <span id="detail-location-text"></span>
                     </span>
                 </div>
@@ -165,18 +404,22 @@
                     <span id="detail-price" class="text-2xl font-bold text-[var(--button-color)]"></span>
                     <span id="detail-price-eur" class="text-sm text-[var(--hint-color)] mt-0.5"></span>
                 </div>
-                
+
                 <div class="border-t border-[var(--tg-theme-section-separator-color)] pt-4 pb-10">
                     <h3 class="text-sm font-bold mb-2">Описание</h3>
                     <div id="detail-desc" class="text-sm leading-relaxed opacity-90 whitespace-pre-wrap"></div>
                 </div>
             </div>
 
-            <div class="p-4 border-t border-[var(--tg-theme-section-separator-color)] bg-[var(--card-bg)] pb-8 flex gap-3 shrink-0">
-                <button onclick="shareItem()" class="px-4 py-3 rounded-xl font-bold border border-[var(--hint-color)] active:bg-gray-100/10 text-[var(--text-color)]">
+            <div
+                class="p-4 border-t border-[var(--tg-theme-section-separator-color)] bg-[var(--card-bg)] pb-8 flex gap-3 shrink-0">
+                <button onclick="shareItem()"
+                    class="px-4 py-3 rounded-xl font-bold border border-[var(--hint-color)] active:bg-gray-100/10 text-[var(--text-color)]">
                     <i data-lucide="share-2" class="w-5 h-5"></i>
                 </button>
-                <button id="detail-buy-btn" onclick="addToCartFromDetails()" class="flex-grow py-3 rounded-xl font-bold text-center active:scale-95 transition-transform text-white shadow-lg" style="background-color: var(--button-color);">
+                <button id="detail-buy-btn" onclick="addToCartFromDetails()"
+                    class="flex-grow py-3 rounded-xl font-bold text-center active:scale-95 transition-transform text-white shadow-lg"
+                    style="background-color: var(--button-color);">
                     В корзину
                 </button>
             </div>
@@ -184,12 +427,13 @@
     </div>
 
     <!-- 2. ЗУМ -->
-    <div id="image-modal" onclick="closeImage()" style="display: none;">
+    <!-- <div id="image-modal" onclick="closeImage()" style="display: none;">
         <img id="modal-img-full" src="" alt="Zoom" style="max-width: 100vw; max-height: 100vh; object-fit: contain;">
-        <button class="absolute top-4 right-4 text-white bg-gray-800/50 p-2 rounded-full backdrop-blur-sm" onclick="closeImage()">
+        <button class="absolute top-4 right-4 text-white bg-gray-800/50 p-2 rounded-full backdrop-blur-sm"
+            onclick="closeImage()">
             <i data-lucide="x" class="w-6 h-6"></i>
         </button>
-    </div>
+    </div> -->
 
     <!-- 3. КОРЗИНА -->
     <div id="cart-modal" class="bottom-sheet">
@@ -197,7 +441,8 @@
         <div class="sheet-content">
             <div class="p-4 flex justify-between items-center border-b border-gray-100/10">
                 <h2 class="text-xl font-bold">Ваш заказ</h2>
-                <button onclick="closeCart()" class="p-1 rounded-full bg-gray-200/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button onclick="closeCart()" class="p-1 rounded-full bg-gray-200/20"><i data-lucide="x"
+                        class="w-5 h-5"></i></button>
             </div>
             <div id="cart-items" class="overflow-y-auto flex-grow p-4 space-y-3"></div>
             <div class="p-4 border-t border-[var(--hint-color)] pb-8">
@@ -208,25 +453,28 @@
                         <div class="text-sm" style="color: var(--button-color)" id="total-eur">0 €</div>
                     </div>
                 </div>
-                <button onclick="checkout()" class="w-full py-3 rounded-xl font-bold text-center active:scale-95 transition-transform" style="background-color: var(--button-color); color: var(--button-text);">
+                <button onclick="checkout()"
+                    class="w-full py-3 rounded-xl font-bold text-center active:scale-95 transition-transform"
+                    style="background-color: var(--button-color); color: var(--button-text);">
                     Оформить заказ
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="notification" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-full opacity-0 transition-opacity pointer-events-none z-[60] text-sm whitespace-nowrap shadow-xl font-medium">
+    <div id="notification"
+        class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-full opacity-0 transition-opacity pointer-events-none z-[60] text-sm whitespace-nowrap shadow-xl font-medium">
         Добавлено
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        
+
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vThwYXuAiytgK3VCPRVuFBFt5ezWAe1Pj1_enZFNlKIp4Ha9C0i3-z-gUhM0ESz2YdUT1_aSJ2noxw8/pub?output=csv";
-        const ADMIN = "Zaslon39"; 
-        const CATS = ["Все", "Россия", "Германия", "Европа", "Америка", "Азия", "Медали"];
-        
+        const ADMIN = "Zaslon39";
+        const CATS = ["Все", "Россия", "Германия", "Европа", "Америка", "Азия", "Медали", "Фалеристика "];
+
         let allProducts = [];
         let displayedProducts = [];
         let cart = [];
@@ -235,6 +483,202 @@
         let currentDetailItem = null;
         let isFavView = false;
 
+        // --- IMAGE MODAL STATE ---
+        let currentScale = 1;
+        let offsetX = 0; // Смещение по X
+        let offsetY = 0; // Смещение по Y
+        let isDragging = false;
+        let startX, startY;
+        let dragraf = null; // ID анимации для оптимизации ПК
+
+        // --- TOUCH SUPPORT ---
+        let initialPinchDistance = 0;
+        let initialScaleOnPinch = 1;
+
+        // --- TRACKING FOR CLICK VS DRAG ---
+        let dragStartedInside = false; // Было ли начало перетаскивания внутри изображения
+
+        function startDrag(e) {
+            e.preventDefault();
+            isDragging = true;
+            dragStartedInside = true;
+            startX = e.clientX - offsetX;
+            startY = e.clientY - offsetY;
+            document.getElementById('modal-img-full').style.cursor = 'grabbing';
+
+            window.addEventListener('mousemove', onGlobalMouseMove);
+            window.addEventListener('mouseup', stopDrag);
+        }
+
+        function onGlobalMouseMove(e) {
+            if (!isDragging) return;
+            offsetX = e.clientX - startX;
+            offsetY = e.clientY - startY;
+
+            // Ограничиваем количество вызовов applyTransform (оптимизация ПК)
+            if (dragraf) {
+                cancelAnimationFrame(dragraf);
+            }
+            dragraf = requestAnimationFrame(applyTransform);
+        }
+
+        function stopDrag() {
+            if (isDragging) {
+                isDragging = false;
+                dragStartedInside = false;
+                document.getElementById('modal-img-full').style.cursor = 'grab';
+                window.removeEventListener('mousemove', onGlobalMouseMove);
+                window.removeEventListener('mouseup', stopDrag);
+                if (dragraf) {
+                    cancelAnimationFrame(dragraf);
+                    dragraf = null;
+                }
+            }
+        }
+
+        function getEventPos(e) {
+            if (e.type.startsWith('touch')) {
+                return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            } else {
+                return { x: e.clientX, y: e.clientY };
+            }
+        }
+
+        function startTouchDrag(e) {
+            e.preventDefault();
+
+            if (e.touches.length === 1) { // Перетаскивание
+                isDragging = true;
+                dragStartedInside = true;
+                const pos = getEventPos(e);
+                startX = pos.x - offsetX;
+                startY = pos.y - offsetY;
+                document.getElementById('modal-img-full').style.cursor = 'grabbing';
+
+                // Прикрепляем к window, чтобы отслеживать движение вне изображения (фикс для мобильных)
+                window.addEventListener('touchmove', onTouchMove, { passive: false });
+                window.addEventListener('touchend', onTouchEndGlobal);
+                window.addEventListener('touchcancel', onTouchEndGlobal);
+            } else if (e.touches.length === 2) { // Zoom
+                initialPinchDistance = getPinchDistance(e);
+                initialScaleOnPinch = currentScale;
+            }
+        }
+
+        function onTouchMove(e) {
+            if (e.touches.length === 1 && isDragging) { // Перетаскивание
+                e.preventDefault(); // ВАЖНО
+                const pos = getEventPos(e);
+                offsetX = pos.x - startX;
+                offsetY = pos.y - startY;
+                applyTransform(); // Прямой вызов OK для touch
+            } else if (e.touches.length === 2) { // Zoom
+                e.preventDefault(); // ВАЖНО
+                const currentDist = getPinchDistance(e);
+                const factor = currentDist / initialPinchDistance;
+                let newScale = initialScaleOnPinch * factor;
+                newScale = Math.min(Math.max(newScale, 0.5), 5);
+
+                const rect = document.getElementById('modal-img-full').getBoundingClientRect();
+                const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+                const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+
+                offsetX = centerX - (centerX - offsetX) * (newScale / currentScale);
+                offsetY = centerY - (centerY - offsetY) * (newScale / currentScale);
+
+                currentScale = newScale;
+                applyTransform();
+            }
+        }
+
+        // Отдельная функция для окончания touch (аналог stopDrag)
+        function onTouchEndGlobal(e) {
+            if (isDragging) {
+                isDragging = false;
+                dragStartedInside = false;
+                document.getElementById('modal-img-full').style.cursor = 'grab';
+                // Удаляем обработчики
+                window.removeEventListener('touchmove', onTouchMove);
+                window.removeEventListener('touchend', onTouchEndGlobal);
+                window.removeEventListener('touchcancel', onTouchEndGlobal);
+            }
+        }
+
+        function getPinchDistance(e) {
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // --- LOGIC FOR CLOSING MODAL ---
+        function maybeCloseImage(e) {
+            // Если отпустили мышь после перетаскивания — не закрываем
+            if (dragStartedInside) {
+                dragStartedInside = false;
+                return;
+            }
+
+            // Если клик на фоне (а не на кнопки/изображение) — закрываем
+            if (e.target.id === 'image-modal' || (e.target.closest('#image-modal') && !e.target.closest('button, #modal-img-full'))) {
+                closeImage();
+            }
+        }
+
+        function closeImage() {
+            const modal = document.getElementById('image-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // --- COMMON LOGIC ---
+        function applyTransform() {
+            const img = document.getElementById('modal-img-full');
+            if (img) {
+                img.style.transform = `translate3d(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px), 0) scale(${currentScale})`;
+            }
+        }
+
+        function applyZoom() {
+            applyTransform();
+        }
+
+        function resetZoom() {
+            currentScale = 1;
+            offsetX = 0;
+            offsetY = 0;
+            applyTransform();
+        }
+
+        function handleWheel(e) {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            zoomImage(delta);
+        }
+
+        function zoomImage(delta) {
+            const oldScale = currentScale;
+            currentScale += delta;
+            currentScale = Math.min(Math.max(currentScale, 0.5), 5);
+
+            if (oldScale !== currentScale) {
+
+                applyTransform();
+            }
+        }
+
+        function handleWheel(e) {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1; // Инвертируем направление
+            zoomImage(delta);
+        }
+
+        function closeImageDirect() {
+            const modal = document.getElementById('image-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
         function init() {
             renderFilters();
             loadData();
@@ -247,7 +691,7 @@
             Papa.parse(bustedUrl, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: (results) => {
-                    allProducts = results.data.filter(i => i.title); 
+                    allProducts = results.data.filter(i => i.title);
                     displayedProducts = [...allProducts];
                     filterItems(currentCategory);
                 }
@@ -257,7 +701,7 @@
         function renderCatalog(items) {
             const container = document.getElementById('catalog');
             container.innerHTML = '';
-            
+
             if (!items.length) {
                 container.innerHTML = '<div class="col-span-2 text-center mt-10 opacity-50 flex flex-col items-center"><i data-lucide="search-x" class="w-10 h-10 mb-2"></i>Ничего не найдено</div>';
                 lucide.createIcons();
@@ -273,67 +717,75 @@
                 const hasSpecificQty = item.quantity && item.quantity.trim() !== "" && qtyVal > 0;
                 const location = item.location || item.Location || item.loc || item.city || '';
 
+                // Текущее количество в корзине
+                const existingInCart = cart.find(c => c.id === item.id);
+                const currentInCart = existingInCart ? existingInCart.quantity : 0;
+
                 const el = document.createElement('div');
                 el.className = `card rounded-xl overflow-hidden flex flex-col h-full ${isSold ? 'sold-item' : ''}`;
-                
-                el.innerHTML = `
-                    <div class="card-hitbox" onclick="openDetails('${item.id}')"></div>
-                    <div class="relative w-full aspect-square bg-white border-b border-gray-100/10">
-                        <img src="${img}" onclick="openImage('${img}');" class="absolute inset-0 w-full h-full object-contain p-2" loading="lazy">
-                        ${isNew && !isSold ? '<div class="ribbon"></div>' : ''}
-                        ${isSold ? '<div class="absolute inset-0 flex items-center justify-center bg-black/10"><span class="bg-black/70 text-white px-2 py-1 rounded text-xs font-bold -rotate-12">SOLD</span></div>' : ''}
-                        <button onclick="toggleFav('${item.id}', this)" class="absolute top-1 left-1 z-30 p-2 rounded-full bg-white/80 backdrop-blur-sm transition-colors active:scale-90 ${isFav ? 'text-red-500' : 'text-gray-400'} shadow-sm cursor-pointer">
-                            <i data-lucide="heart" class="w-6 h-6 ${isFav ? 'fill-current' : ''}"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="p-3 flex flex-col flex-grow relative pointer-events-none"> 
-                        <div class="flex justify-between items-start mb-1">
-                            <span class="text-[10px] font-bold uppercase tracking-wider opacity-60">${item.category || 'Лот'}</span>
-                        </div>
-                        <h3 class="font-semibold text-sm leading-snug mb-1 line-clamp-2">${item.title}</h3>
-                        
-                        <div class="min-h-[1.5em] mt-1 flex flex-wrap items-center gap-2">
-                            ${hasSpecificQty && !isSold ? 
-                                `<span class="text-[11px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded whitespace-nowrap">В наличии: ${qtyVal} шт.</span>` 
-                                : ''}
-                            
-                            ${location ? 
-                                `<span class="text-[10px] text-[var(--hint-color)] flex items-center gap-0.5 whitespace-nowrap"><i data-lucide="map-pin" class="w-3 h-3"></i> ${location}</span>` 
-                                : ''}
-                        </div>
 
-                        <div class="mt-auto flex items-center justify-between pt-2">
-                            <div class="flex flex-col">
-                                <span class="font-bold text-base leading-none">${item.price_rub || '—'} ₽</span>
-                                ${item.price_eur ? `<span class="text-xs mt-1" style="color: var(--hint-color)">${item.price_eur} €</span>` : ''}
-                            </div>
-                            
-                            ${!isSold ? 
-                                `<button onclick="addToCart('${item.id}')" class="buy-btn w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform shadow-md z-30 cursor-pointer pointer-events-auto" style="background-color: var(--bg-color); color: var(--button-color)"><i data-lucide="plus" class="w-6 h-6"></i></button>` 
-                                : ''}
-                        </div>
+                el.innerHTML = `
+                <div class="card-hitbox" onclick="openDetails('${item.id}')"></div>
+                <div class="relative w-full aspect-square bg-white border-b border-gray-100/10">
+                    <img src="${img}" onclick="openImage('${img}');" class="absolute inset-0 w-full h-full object-contain p-2" loading="lazy">
+                    ${isNew && !isSold ? '<div class="ribbon"></div>' : ''}
+                    ${isSold ? '<div class="absolute inset-0 flex items-center justify-center bg-black/10"><span class="bg-black/70 text-white px-2 py-1 rounded text-xs font-bold -rotate-12">SOLD</span></div>' : ''}
+                    <button onclick="toggleFav('${item.id}', this)" class="absolute top-1 left-1 z-30 p-2 rounded-full bg-white/80 backdrop-blur-sm transition-colors active:scale-90 ${isFav ? 'text-red-500' : 'text-gray-400'} shadow-sm cursor-pointer">
+                        <i data-lucide="heart" class="w-6 h-6 ${isFav ? 'fill-current' : ''}"></i>
+                    </button>
+                </div>
+                
+                <div class="p-3 flex flex-col flex-grow relative pointer-events-none"> 
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-[10px] font-bold uppercase tracking-wider opacity-60">${item.category || 'Лот'}</span>
                     </div>
-                `;
+                    <h3 class="font-semibold text-sm leading-snug mb-1 line-clamp-2">${item.title}</h3>
+                    
+                    <div class="min-h-[1.5em] mt-1 flex flex-wrap items-center gap-2">
+                        ${hasSpecificQty && !isSold ?
+                        `<span class="text-[11px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded whitespace-nowrap">В наличии: ${qtyVal} шт.</span>`
+                        : ''}
+                        
+                        ${location ?
+                        `<span class="text-[10px] text-[var(--hint-color)] flex items-center gap-0.5 whitespace-nowrap"><i data-lucide="map-pin" class="w-3 h-3"></i> ${location}</span>`
+                        : ''}
+                    </div>
+
+                    <div class="mt-auto flex items-center justify-between pt-2">
+                        <div class="flex flex-col">
+                            <span class="font-bold text-base leading-none">${item.price_rub || '—'} ₽</span>
+                            ${item.price_eur ? `<span class="text-xs mt-1" style="color: var(--hint-color)">${item.price_eur} €</span>` : ''}
+                        </div>
+                        
+                        ${!isSold && currentInCart < qtyVal ?
+                        `<button onclick="addToCart('${item.id}')" class="buy-btn w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform shadow-md z-30 cursor-pointer pointer-events-auto" style="background-color: var(--bg-color); color: var(--button-color)"><i data-lucide="plus" class="w-6 h-6"></i></button>`
+                        : ''}
+                    </div>
+                </div>
+            `;
                 container.appendChild(el);
             });
             lucide.createIcons();
         }
 
-        // Открытие деталей товара
         window.openDetails = (itemId) => {
             const item = allProducts.find(p => p.id === itemId);
-            if(!item) return;
+            if (!item) return;
 
             currentDetailItem = item;
-            
-            document.getElementById('detail-img').src = item.image;
-            document.getElementById('detail-title').innerText = item.title;
+
+            // --- Заполняем базовую информацию ---
+            document.getElementById('detail-img').src = item.image || 'https://placehold.co/300x300?text=No+Photo';
+            document.getElementById('detail-title').innerText = item.title || 'Без названия';
+
+            // Цены
             document.getElementById('detail-price').innerText = (item.price_rub || '—') + ' ₽';
             document.getElementById('detail-price-eur').innerText = item.price_eur ? `${item.price_eur} €` : '';
-            
-            const qtyVal = parseInt(item.quantity) || 0;
-            const hasSpecificQty = item.quantity && item.quantity.trim() !== "" && qtyVal > 0;
+            document.getElementById('detail-price-eur').classList.toggle('hidden', !item.price_eur);
+
+            // Количество
+            const qtyVal = parseInt(item.quantity);
+            const hasSpecificQty = !isNaN(qtyVal) && qtyVal >= 0;
             const qtyEl = document.getElementById('detail-qty');
             if (hasSpecificQty && !checkSold(item)) {
                 qtyEl.innerText = `В наличии: ${qtyVal} шт.`;
@@ -342,10 +794,12 @@
                 qtyEl.classList.add('hidden');
             }
 
-            const location = item.location || item.Location || item.loc || '';
+            // Локация
+            const location = item.location || item.Location || item.loc || item.city || '';
             const locBadge = document.getElementById('detail-location-badge');
-            if(location) {
-                document.getElementById('detail-location-text').innerText = location;
+            const locText = document.getElementById('detail-location-text');
+            if (location) {
+                locText.innerText = location;
                 locBadge.classList.remove('hidden');
                 locBadge.classList.add('flex');
             } else {
@@ -353,28 +807,61 @@
                 locBadge.classList.remove('flex');
             }
 
+            // Описание (основное поле)
             const desc = item.description || item.Description || 'Описание отсутствует';
             document.getElementById('detail-desc').innerText = desc;
-            
-            updateDetailFavBtn();
-            
-            const buyBtn = document.getElementById('detail-buy-btn');
-            if(checkSold(item)) {
-                buyBtn.disabled = true; buyBtn.innerText = "ПРОДАНО"; buyBtn.style.opacity = "0.5";
+
+            const extraInfo = [];
+
+            if (item.id) extraInfo.push(`**ID:** ${esc(item.id)}`);
+            if (item.category) extraInfo.push(`**Категория:** ${esc(item.category)}`);
+            if (item.status) extraInfo.push(`**Статус:** ${esc(item.status)}`);
+            if (item.new && item.new.trim()) extraInfo.push(`**Новинка:** Да`);
+            if (item.seller) extraInfo.push(`**Продавец:** ${esc(item.seller)}`); // пример дополнительного поля
+
+            if (extraInfo.length > 0) {
+                document.getElementById('detail-desc').innerHTML = desc + '<br><br>' + extraInfo.join('<br>');
             } else {
-                buyBtn.disabled = false; buyBtn.innerText = "В корзину"; buyBtn.style.opacity = "1";
+                document.getElementById('detail-desc').innerText = desc;
+            }
+
+            updateDetailFavBtn();
+
+            // Кнопка "В корзину"
+            const buyBtn = document.getElementById('detail-buy-btn');
+            const existingInCart = cart.find(c => c.id === item.id);
+            const currentInCart = existingInCart ? existingInCart.quantity : 0;
+
+            if (checkSold(item) || (hasSpecificQty && currentInCart >= qtyVal)) {
+                buyBtn.disabled = true;
+                buyBtn.innerText = "Недоступно";
+                buyBtn.style.opacity = "0.5";
+            } else {
+                buyBtn.disabled = false;
+                buyBtn.innerText = "В корзину";
+                buyBtn.style.opacity = "1";
             }
 
             document.getElementById('details-modal').classList.add('active');
             lucide.createIcons();
         };
 
+        // Вспомогательная функция для экранирования HTML
+        function esc(str) {
+            if (typeof str !== 'string') return str;
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         window.closeDetails = () => { document.getElementById('details-modal').classList.remove('active'); };
 
         window.viewFullImageFromDetails = () => {
-            if(currentDetailItem) {
-                document.getElementById('modal-img-full').src = currentDetailItem.image;
-                document.getElementById('image-modal').style.display = 'flex';
+            if (currentDetailItem && currentDetailItem.image) {
+                openImage(currentDetailItem.image);
             }
         };
 
@@ -383,23 +870,45 @@
             document.getElementById('image-modal').style.display = 'flex';
         }
 
-        // Добавление товара в корзину
+        window.closeImage = () => {
+            document.getElementById('image-modal').style.display = 'none';
+        };
+
         function addToCart(itemId) {
             const item = allProducts.find(p => p.id === itemId);
-            if(!item || checkSold(item)) return; // Не добавляем sold items
-            
+            if (!item || checkSold(item)) return;
+
+            const qtyVal = parseInt(item.quantity) || 0;
+            if (qtyVal <= 0) {
+                showNotification("Товар закончился", true);
+                return;
+            }
+
             const existingItem = cart.find(cartItem => cartItem.id === itemId);
-            if(existingItem) {
-                existingItem.quantity += 1; // Увеличиваем количество при повторном добавлении
+            const currentInCart = existingItem ? existingItem.quantity : 0;
+
+            if (currentInCart >= qtyVal) {
+                showNotification("Нельзя добавить больше — лимит исчерпан", true);
+                return;
+            }
+
+            if (existingItem) {
+                existingItem.quantity += 1;
             } else {
-                cart.push({...item, quantity: 1}); // Добавляем новый товар с количеством 1
+                cart.push({ ...item, quantity: 1 });
             }
             updateCartUI();
             showNotification("Товар добавлен в корзину!");
+            // Перерисовываем каталог, если нужно обновить кнопки
+            if (!isFavView) {
+                renderCatalog(displayedProducts);
+            } else {
+                renderFavs();
+            }
         }
 
         window.addToCartFromDetails = () => {
-            if(currentDetailItem) {
+            if (currentDetailItem) {
                 addToCart(currentDetailItem.id);
                 closeDetails();
             }
@@ -412,7 +921,7 @@
         }
 
         function openCart() {
-            document.getElementById('cart-modal').classList.add('active'); 
+            document.getElementById('cart-modal').classList.add('active');
             renderCartItems();
         }
 
@@ -428,6 +937,7 @@
                 cartItemsContainer.innerHTML = '<p class="text-center py-10 opacity-50">Корзина пуста</p>';
                 document.getElementById('total-rub').innerText = '0 ₽';
                 document.getElementById('total-eur').innerText = '0 €';
+                lucide.createIcons();
                 return;
             }
 
@@ -439,37 +949,44 @@
                 totalEur += getPrice(item, 'eur') * item.quantity;
 
                 cartItemsContainer.innerHTML += `
-                    <div class="flex justify-between gap-3 items-center p-2 rounded-lg border border-gray-100/10 bg-gray-50/5">
-                        <img src="${item.image}" class="w-12 h-12 object-contain bg-white rounded">
-                        <div class="flex-grow min-w-0">
-                            <div class="text-sm font-medium truncate">${item.title}</div>
-                            <div class="text-xs opacity-70">Цена: ${item.price_rub} ₽</div>
-                        </div>
-                        <span class="text-sm">× ${item.quantity}</span>
-                        <button onclick="removeFromCart('${item.id}')" class="text-red-500">
-                            <i data-lucide="trash-2" class="w-5 h-5"></i>
-                        </button>
+                <div class="flex justify-between gap-3 items-center p-2 rounded-lg border border-gray-100/10 bg-gray-50/5">
+                    <img src="${item.image}" class="w-12 h-12 object-contain bg-white rounded">
+                    <div class="flex-grow min-w-0">
+                        <div class="text-sm font-medium truncate">${item.title}</div>
+                        <div class="text-xs opacity-70">Цена: ${item.price_rub} ₽</div>
                     </div>
-                `;
+                    <span class="text-sm">× ${item.quantity}</span>
+                    <button onclick="removeFromCart('${item.id}')" class="text-red-500">
+                        <i data-lucide="trash-2" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            `;
             });
 
             document.getElementById('total-rub').innerText = totalRub + ' ₽';
             document.getElementById('total-eur').innerText = totalEur + ' €';
+            lucide.createIcons(); // ← критически важно для иконок
         }
 
         function removeFromCart(itemId) {
             const index = cart.findIndex(item => item.id === itemId);
             if (index > -1) {
-                cart.splice(index, 1); // Удаляем товар из корзины
+                cart.splice(index, 1);
                 updateCartUI();
-                renderCartItems(); // Обновляем отображение корзины
+                renderCartItems();
                 showNotification("Товар удален из корзины");
+                // Обновляем каталог, чтобы кнопка "В корзину" снова стала активной
+                if (!isFavView) {
+                    renderCatalog(displayedProducts);
+                } else {
+                    renderFavs();
+                }
             }
         }
 
         function checkout() {
             if (cart.length === 0) {
-                alert("Корзина пуста!"); // Можно заменить на уведомление
+                alert("Корзина пуста!");
                 return;
             }
 
@@ -485,17 +1002,17 @@
         function handleSearch() {
             const q = document.getElementById('search-input').value.toLowerCase().trim();
             const sectionTitle = document.getElementById('section-title');
-            
+
             if (q.length === 0) {
                 filterItems(currentCategory);
                 return;
             }
-            
-            displayedProducts = allProducts.filter(i => 
-                (i.title && i.title.toLowerCase().includes(q)) || 
+
+            displayedProducts = allProducts.filter(i =>
+                (i.title && i.title.toLowerCase().includes(q)) ||
                 (i.description && i.description.toLowerCase().includes(q))
             );
-            
+
             sectionTitle.innerText = "Результаты поиска";
             sectionTitle.classList.remove('hidden');
             isFavView = false;
@@ -512,7 +1029,7 @@
             displayedProducts = cat === 'Все' ? [...allProducts] : allProducts.filter(i => i.category && i.category.includes(cat));
             sortCatalog();
         };
-        
+
         function updateFilterButtons() {
             document.querySelectorAll('.filter-btn').forEach(b => {
                 const isActive = b.textContent.trim() === currentCategory && !isFavView;
@@ -520,7 +1037,7 @@
                 b.style.color = isActive ? 'var(--bg-color)' : 'var(--text-color)';
             });
             const favIcon = document.getElementById('fav-icon-header');
-            if(isFavView) {
+            if (isFavView) {
                 favIcon.classList.add('fill-current', 'text-red-500'); favIcon.style.color = '#ef4444';
             } else {
                 favIcon.classList.remove('fill-current', 'text-red-500'); favIcon.style.color = 'var(--text-color)';
@@ -529,8 +1046,8 @@
 
         function renderFilters() {
             document.getElementById('filters').innerHTML = CATS.map(cat => `
-                <button onclick="filterItems('${cat}')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all" style="background-color: ${cat === 'Все' ? 'var(--text-color)' : 'var(--input-bg)'}; color: ${cat === 'Все' ? 'var(--bg-color)' : 'black'}">${cat}</button>
-            `).join('');
+            <button onclick="filterItems('${cat}')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all" style="background-color: ${cat === 'Все' ? 'var(--text-color)' : 'var(--input-bg)'}; color: ${cat === 'Все' ? 'var(--bg-color)' : 'black'}">${cat}</button>
+        `).join('');
         }
 
         function toggleFav(id, btn) {
@@ -539,12 +1056,12 @@
             else favorites.splice(idx, 1);
             localStorage.setItem('favs', JSON.stringify(favorites));
             updateFavBadge();
-            
-            if(isFavView) {
+
+            if (isFavView) {
                 renderFavs();
             } else {
                 const icon = btn.querySelector('i');
-                if(favorites.includes(id)) {
+                if (favorites.includes(id)) {
                     btn.classList.add('text-red-500'); btn.classList.remove('text-gray-400');
                     icon.classList.add('fill-current');
                 } else {
@@ -553,31 +1070,35 @@
                 }
             }
         }
-        
+
         function toggleDetailFav() {
-            if(!currentDetailItem) return;
+            if (!currentDetailItem) return;
             const id = currentDetailItem.id;
             const idx = favorites.indexOf(id);
             if (idx === -1) favorites.push(id); else favorites.splice(idx, 1);
             localStorage.setItem('favs', JSON.stringify(favorites));
             updateFavBadge(); updateDetailFavBtn();
-            if(isFavView) renderFavs(); else renderCatalog(displayedProducts); 
+            if (isFavView) renderFavs(); else renderCatalog(displayedProducts);
         }
 
         function updateDetailFavBtn() {
             const btn = document.getElementById('detail-fav-btn');
+            if (!btn || !currentDetailItem) return; // Защита от null
+
             const icon = btn.querySelector('i');
             const isFav = favorites.includes(currentDetailItem.id);
-            if(isFav) {
-                icon.classList.add('fill-current', 'text-red-500'); btn.classList.add('border-red-500');
+            if (isFav) {
+                // icon.classList.add('fill-current', 'text-red-500');
+                btn.classList.add('border-red-500');
             } else {
-                icon.classList.remove('fill-current', 'text-red-500'); btn.classList.remove('border-red-500');
+                // icon.classList.remove('fill-current', 'text-red-500');
+                btn.classList.remove('border-red-500');
             }
         }
 
         function toggleFavView() {
             isFavView = !isFavView;
-            if(isFavView) {
+            if (isFavView) {
                 document.getElementById('search-input').value = '';
                 renderFavs();
             } else {
@@ -600,15 +1121,11 @@
         }
 
         window.shareItem = () => {
-            if(!currentDetailItem) return;
-            const BOT_USERNAME = "KonigsbergStoreBot"; 
+            if (!currentDetailItem) return;
+            const BOT_USERNAME = "KonigsbergStoreBot";
             const text = `💎 ${currentDetailItem.title}\n💰 ${currentDetailItem.price_rub}₽\n\nПосмотри в магазине!`;
             const url = `https://t.me/share/url?url=https://t.me/${BOT_USERNAME}&text=${encodeURIComponent(text)}`;
             tg.openTelegramLink(url);
-        };
-
-        window.closeImage = () => {
-            document.getElementById('image-modal').style.display = 'none';
         };
 
         function sortCatalog() {
@@ -626,21 +1143,21 @@
         }
 
         function checkSold(item) { return item.status && (item.status.toLowerCase().includes('sold') || item.status.toLowerCase().includes('продано')); }
-        function getPrice(item, type = 'rub') { const val = type === 'rub' ? item.price_rub : item.price_eur; return parseInt((val || '0').toString().replace(/\D/g,'')) || 0; }
-        
-        function showNotification(text, isError = false) { 
-            const n = document.getElementById('notification'); 
+        function getPrice(item, type = 'rub') { const val = type === 'rub' ? item.price_rub : item.price_eur; return parseInt((val || '0').toString().replace(/\D/g, '')) || 0; }
+
+        function showNotification(text, isError = false) {
+            const n = document.getElementById('notification');
             n.innerText = text;
             if (isError) {
                 n.classList.remove('bg-black/80'); n.classList.add('bg-red-600/90');
             } else {
                 n.classList.add('bg-black/80'); n.classList.remove('bg-red-600/90');
             }
-            n.classList.remove('opacity-0'); 
-            setTimeout(() => n.classList.add('opacity-0'), 2000); 
+            n.classList.remove('opacity-0');
+            setTimeout(() => n.classList.add('opacity-0'), 2000);
         }
 
-        init();
+
 
         function toggleTheme() {
             document.documentElement.classList.toggle('dark');
@@ -661,7 +1178,10 @@
             }
             lucide.createIcons();
         }
+        init();
+
     </script>
 
 </body>
+
 </html>

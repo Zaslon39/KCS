@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
-    
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -185,18 +185,16 @@
             z-index: 10;
             cursor: pointer;
         }
-#modal-img-full {
-    position: absolute;
-    max-width: 95vw;
-    max-height: 95vh;
-    object-fit: contain;
-    transform-origin: 0 0;
-    touch-action: none;
-    cursor: grab;
-}
 
-
-
+        #modal-img-full {
+            position: absolute;
+            max-width: 95vw;
+            max-height: 95vh;
+            object-fit: contain;
+            transform-origin: 0 0;
+            touch-action: none;
+            cursor: grab;
+        }
     </style>
 </head>
 
@@ -293,7 +291,7 @@
             </div>
 
             <!-- Изображение -->
-            <img id="modal-img-full" alt="Увеличенное изображение"  onmousedown="startDrag(event)" 
+            <img id="modal-img-full" alt="Увеличенное изображение" onmousedown="startDrag(event)"
                 onwheel="handleWheel(event); event.stopPropagation();" draggable="false">
         </div>
     </div>
@@ -457,9 +455,10 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-
+        console.log(tg);
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vThwYXuAiytgK3VCPRVuFBFt5ezWAe1Pj1_enZFNlKIp4Ha9C0i3-z-gUhM0ESz2YdUT1_aSJ2noxw8/pub?output=csv";
         const ADMIN = "Zaslon39";
+        // const ADMIN = "vladislavho";
         const CATS = ["Все", "Россия", "Германия", "Европа", "Америка", "Азия", "Медали", "Фалеристика "];
 
         let allProducts = [];
@@ -471,147 +470,147 @@
         let isFavView = false;
 
         // --- IMAGE MODAL STATE ---
-const img = document.getElementById('modal-img-full');
+        const img = document.getElementById('modal-img-full');
 
-let scale = 1;
-let offsetX = 0;
-let offsetY = 0;
+        let scale = 1;
+        let offsetX = 0;
+        let offsetY = 0;
 
-let startX = 0;
-let startY = 0;
-let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let isDragging = false;
 
-let pinchStartDist = 0;
-let pinchStartScale = 1;
+        let pinchStartDist = 0;
+        let pinchStartScale = 1;
 
-function applyTransform() {
-    img.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
-}
+        function applyTransform() {
+            img.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+        }
 
-function getImageRect() {
-    // rect меняется из-за object-fit, поэтому пересчитываем каждый раз
-    return img.getBoundingClientRect();
-}
+        function getImageRect() {
+            // rect меняется из-за object-fit, поэтому пересчитываем каждый раз
+            return img.getBoundingClientRect();
+        }
 
-function centerImage() {
-    scale = 1;
-    applyTransform();
+        function centerImage() {
+            scale = 1;
+            applyTransform();
 
-    requestAnimationFrame(() => {
-        const rect = getImageRect();
-        offsetX = (window.innerWidth - rect.width) / 2;
-        offsetY = (window.innerHeight - rect.height) / 2;
-        applyTransform();
-    });
-}
+            requestAnimationFrame(() => {
+                const rect = getImageRect();
+                offsetX = (window.innerWidth - rect.width) / 2;
+                offsetY = (window.innerHeight - rect.height) / 2;
+                applyTransform();
+            });
+        }
 
 
-img.onload = centerImage;
-if (img.complete) centerImage();
+        img.onload = centerImage;
+        if (img.complete) centerImage();
 
-// ---------------- DRAG ----------------
-img.addEventListener('mousedown', e => {
-    e.preventDefault();
-    isDragging = true;
-    startX = e.clientX - offsetX;
-    startY = e.clientY - offsetY;
-});
+        // ---------------- DRAG ----------------
+        img.addEventListener('mousedown', e => {
+            e.preventDefault();
+            isDragging = true;
+            startX = e.clientX - offsetX;
+            startY = e.clientY - offsetY;
+        });
 
-window.addEventListener('mousemove', e => {
-    if (!isDragging) return;
-    offsetX = e.clientX - startX;
-    offsetY = e.clientY - startY;
-    applyTransform();
-});
+        window.addEventListener('mousemove', e => {
+            if (!isDragging) return;
+            offsetX = e.clientX - startX;
+            offsetY = e.clientY - startY;
+            applyTransform();
+        });
 
-window.addEventListener('mouseup', () => {
-    isDragging = false;
-});
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
 
-// ---------------- TOUCH ----------------
-img.addEventListener('touchstart', e => {
-    e.preventDefault();
+        // ---------------- TOUCH ----------------
+        img.addEventListener('touchstart', e => {
+            e.preventDefault();
 
-    if (e.touches.length === 1) {
-        const t = e.touches[0];
-        isDragging = true;
-        startX = t.clientX - offsetX;
-        startY = t.clientY - offsetY;
-    } else if (e.touches.length === 2) {
-        pinchStartDist = getDist(e);
-        pinchStartScale = scale;
-    }
-}, { passive: false });
+            if (e.touches.length === 1) {
+                const t = e.touches[0];
+                isDragging = true;
+                startX = t.clientX - offsetX;
+                startY = t.clientY - offsetY;
+            } else if (e.touches.length === 2) {
+                pinchStartDist = getDist(e);
+                pinchStartScale = scale;
+            }
+        }, { passive: false });
 
-img.addEventListener('touchmove', e => {
-    e.preventDefault();
+        img.addEventListener('touchmove', e => {
+            e.preventDefault();
 
-    if (e.touches.length === 1 && isDragging) {
-        const t = e.touches[0];
-        offsetX = t.clientX - startX;
-        offsetY = t.clientY - startY;
-        applyTransform();
-    }
+            if (e.touches.length === 1 && isDragging) {
+                const t = e.touches[0];
+                offsetX = t.clientX - startX;
+                offsetY = t.clientY - startY;
+                applyTransform();
+            }
 
-    if (e.touches.length === 2) {
-        const rect = getImageRect();
+            if (e.touches.length === 2) {
+                const rect = getImageRect();
 
-        const dist = getDist(e);
-        const newScale = pinchStartScale * (dist / pinchStartDist);
+                const dist = getDist(e);
+                const newScale = pinchStartScale * (dist / pinchStartDist);
 
-        // центр pinch в координатах окна
-        const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-        const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                // центр pinch в координатах окна
+                const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
 
-        // координаты точки на изображении
-        const imgX = (cx - rect.left) / scale;
-        const imgY = (cy - rect.top) / scale;
+                // координаты точки на изображении
+                const imgX = (cx - rect.left) / scale;
+                const imgY = (cy - rect.top) / scale;
 
-        scale = newScale;
+                scale = newScale;
 
-        // возвращаем точку под пальцами на место
-        offsetX = cx - imgX * scale;
-        offsetY = cy - imgY * scale;
+                // возвращаем точку под пальцами на место
+                offsetX = cx - imgX * scale;
+                offsetY = cy - imgY * scale;
 
-        applyTransform();
-    }
-}, { passive: false });
+                applyTransform();
+            }
+        }, { passive: false });
 
-img.addEventListener('touchend', () => {
-    isDragging = false;
-});
+        img.addEventListener('touchend', () => {
+            isDragging = false;
+        });
 
-// ---------------- UTILS ----------------
-function getDist(e) {
-    const dx = e.touches[0].clientX - e.touches[1].clientX;
-    const dy = e.touches[0].clientY - e.touches[1].clientY;
-    return Math.hypot(dx, dy);
-}
+        // ---------------- UTILS ----------------
+        function getDist(e) {
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            return Math.hypot(dx, dy);
+        }
 
-function zoomImage(delta) {
-    const rect = getImageRect();
+        function zoomImage(delta) {
+            const rect = getImageRect();
 
-    // Центр экрана — точка масштабирования
-    const cx = window.innerWidth / 2;
-    const cy = window.innerHeight / 2;
+            // Центр экрана — точка масштабирования
+            const cx = window.innerWidth / 2;
+            const cy = window.innerHeight / 2;
 
-    // Точка на изображении, которая должна остаться под центром
-    const imgX = (cx - rect.left) / scale;
-    const imgY = (cy - rect.top) / scale;
+            // Точка на изображении, которая должна остаться под центром
+            const imgX = (cx - rect.left) / scale;
+            const imgY = (cy - rect.top) / scale;
 
-    const newScale = Math.min(Math.max(scale + delta, 0.5), 5);
+            const newScale = Math.min(Math.max(scale + delta, 0.5), 5);
 
-    scale = newScale;
+            scale = newScale;
 
-    offsetX = cx - imgX * scale;
-    offsetY = cy - imgY * scale;
+            offsetX = cx - imgX * scale;
+            offsetY = cy - imgY * scale;
 
-    applyTransform();
-}
+            applyTransform();
+        }
 
-function resetZoom() {
-    centerImage(); // просто вызываем нашу идеальную функцию центрирования
-}
+        function resetZoom() {
+            centerImage(); // просто вызываем нашу идеальную функцию центрирования
+        }
 
 
         // --- LOGIC FOR CLOSING MODAL ---
@@ -785,24 +784,24 @@ function resetZoom() {
             }
 
             // Описание (основное поле)
-const desc = item.description || item.Description || 'Описание отсутствует';
+            const desc = item.description || item.Description || 'Описание отсутствует';
 
-const extraInfo = [];
+            const extraInfo = [];
 
-// Обрезаем пробелы у категории
-if (item.category?.trim()) extraInfo.push(`<b>Категория</b><br/>${esc(item.category.trim())}`);
+            // Обрезаем пробелы у категории
+            if (item.category?.trim()) extraInfo.push(`<b>Категория</b><br/>${esc(item.category.trim())}`);
 
-console.log(extraInfo);
+            console.log(extraInfo);
 
-if (extraInfo.length > 0) {
+            if (extraInfo.length > 0) {
 
-    // Используем innerHTML, чтобы отобразить <b> и <br/>
-    document.getElementById('detail-desc').innerHTML = desc + '<br><br>' + extraInfo.join('');
-} else {
+                // Используем innerHTML, чтобы отобразить <b> и <br/>
+                document.getElementById('detail-desc').innerHTML = desc + '<br><br>' + extraInfo.join('');
+            } else {
 
-    // Используем innerText, если нет дополнительной информации (только текст)
-    document.getElementById('detail-desc').innerText = desc;
-}
+                // Используем innerText, если нет дополнительной информации (только текст)
+                document.getElementById('detail-desc').innerText = desc;
+            }
 
             updateDetailFavBtn();
 
@@ -975,7 +974,10 @@ if (extraInfo.length > 0) {
             const message = `👋 Здравствуйте, @${ADMIN}!\n\nЗаказ:\n${orderDetails}\n\n💰 ИТОГО: ${totalRub}₽\n💰 ДЛЯ ЕС ИТОГО: ${totalEur}€`;
 
             const url = `https://t.me/${ADMIN}?start=order&text=${encodeURIComponent(message)}`;
-            tg.openTelegramLink(url);
+
+            // tg.openTelegramLink(url);
+            tg.sendData(message);
+            alert("Сообщение отправлено!");
         }
 
         function handleSearch() {
@@ -1105,6 +1107,7 @@ if (extraInfo.length > 0) {
             const text = `💎 ${currentDetailItem.title}\n💰 ${currentDetailItem.price_rub}₽\n\nПосмотри в магазине!`;
             const url = `https://t.me/share/url?url=https://t.me/${BOT_USERNAME}&text=${encodeURIComponent(text)}`;
             tg.openTelegramLink(url);
+            
         };
 
         function sortCatalog() {

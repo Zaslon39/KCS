@@ -455,6 +455,7 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+        console.log(tg);
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vThwYXuAiytgK3VCPRVuFBFt5ezWAe1Pj1_enZFNlKIp4Ha9C0i3-z-gUhM0ESz2YdUT1_aSJ2noxw8/pub?output=csv";
         const ADMIN = "Zaslon39";
         // const ADMIN = "vladislavho";
@@ -974,9 +975,9 @@
 
             const url = `https://t.me/${ADMIN}?start=order&text=${encodeURIComponent(message)}`;
 
-            tg.openTelegramLink(url);
-            // tg.sendData(message);
-            // alert("Сообщение отправлено!");
+            // tg.openTelegramLink(url);
+            tg.sendData(message);
+            alert("Сообщение отправлено!");
         }
 
         function handleSearch() {

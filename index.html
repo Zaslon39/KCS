@@ -299,8 +299,11 @@
     <header
         class="sticky top-0 z-40 pt-2 pb-2 -mx-3 px-3 backdrop-blur-md bg-[var(--bg-color)]/95 border-b border-[var(--tg-theme-section-separator-color)]">
         <div class="flex justify-between items-center mb-3">
-            <h1 class="text-lg font-bold truncate pr-2">Konigsberg Collection</h1>
+            <h1 class="text-lg font-bold truncate pr-2" data-lang-key="appTitle">Konigsberg Collection</h1>
             <div class="flex items-center gap-2">
+                <button onclick="toggleLanguage()" id="lang-toggle"
+                    class="p-2 rounded-full active:bg-gray-200/20 text-sm font-medium" style="color: var(--text-color)"
+                    data-lang-key="langToggle">RU</button>
                 <button onclick="toggleTheme()" class="p-2 rounded-full active:bg-gray-200/20">
                     <i id="theme-icon" data-lucide="moon" class="w-6 h-6" style="color: var(--text-color)"></i>
                 </button>
@@ -321,39 +324,44 @@
         <div class="mb-3 relative">
             <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-gray-400"></i>
             <input type="text" id="search-input" oninput="handleSearch()" placeholder="Поиск монет..."
-                class="search-bar w-full rounded-xl py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/50">
+                class="search-bar w-full rounded-xl py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/50"
+                data-lang-key="searchPlaceholder">
         </div>
 
         <div class="flex justify-between items-center px-1 mb-2 gap-2">
             <div id="filters" class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide flex-grow"></div>
             <div class="relative min-w-[32px]">
                 <select id="sort-select" onchange="sortCatalog()" class="opacity-0 absolute inset-0 w-full h-full z-10">
-                    <option value="default">По умолчанию</option>
-                    <option value="new">🔥 Новинки</option>
-                    <option value="price_asc">Цена: min</option>
-                    <option value="price_desc">Цена: max</option>
-                    <option value="alpha">А-Я</option>
+                    <option value="default" data-lang-key="sortDefault">По умолчанию</option>
+                    <option value="new" data-lang-key="sortNew">🔥 Новинки</option>
+                    <option value="price_asc" data-lang-key="sortPriceAsc">Цена: min</option>
+                    <option value="price_desc" data-lang-key="sortPriceDesc">Цена: max</option>
+                    <option value="alpha" data-lang-key="sortAlpha">А-Я</option>
                 </select>
-                <button class="p-1.5 rounded bg-[var(--card-bg)] border border-[var(--hint-color)]"><i
-                        data-lucide="arrow-up-down" class="w-4 h-4 text-[var(--text-color)]"></i></button>
+                <button class="p-1.5 rounded bg-[var(--card-bg)] border border-[var(--hint-color)]">
+                    <i data-lucide="arrow-up-down" class="w-4 h-4 text-[var(--text-color)]"></i>
+                </button>
             </div>
         </div>
     </header>
 
-    <h2 id="section-title" class="text-sm font-bold opacity-50 mb-2 pl-1 hidden">Результаты поиска</h2>
+    <h2 id="section-title" class="text-sm font-bold opacity-50 mb-2 pl-1 hidden" data-lang-key="resultsTitle">Результаты
+        поиска</h2>
 
     <div id="catalog" class="grid grid-cols-2 gap-3 mt-2 pb-10">
         <div class="loader col-span-2"></div>
     </div>
+    <div id="pagination" class="flex justify-center gap-2 mt-6 mb-6"></div>
 
     <!-- 1. ДЕТАЛИ -->
     <div id="details-modal" class="bottom-sheet">
         <div class="sheet-overlay" onclick="closeDetails()"></div>
         <div class="sheet-content h-[90vh]">
             <div class="p-4 flex justify-between items-center border-b border-gray-100/10 shrink-0">
-                <span class="text-xs font-bold text-[var(--hint-color)]">ДЕТАЛИ</span>
-                <button onclick="closeDetails()" class="p-1 rounded-full bg-gray-200/20"><i data-lucide="x"
-                        class="w-5 h-5"></i></button>
+                <span class="text-xs font-bold text-[var(--hint-color)]" data-lang-key="detailsTitle">ДЕТАЛИ</span>
+                <button onclick="closeDetails()" class="p-1 rounded-full bg-gray-200/20">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
             </div>
 
             <div class="overflow-y-auto flex-grow p-4">
@@ -380,18 +388,19 @@
                         class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded hidden"></span>
                     <span id="detail-location-badge"
                         class="text-xs font-medium text-[var(--hint-color)] bg-[var(--input-bg)] px-2 py-1 rounded flex items-center gap-1 hidden">
-                        <i data-lucide="map-pin" class="w-3 h-3"></i> <span id="detail-location-text"></span>
+                        <i data-lucide="map-pin" class="w-3 h-3"></i>
+                        <span id="detail-location-text"></span>
                     </span>
                 </div>
 
                 <div class="flex flex-col mb-4 bg-[var(--input-bg)] p-3 rounded-xl">
-                    <span class="text-xs text-[var(--hint-color)] mb-1">Стоимость:</span>
+                    <span class="text-xs text-[var(--hint-color)] mb-1" data-lang-key="costLabel">Стоимость:</span>
                     <span id="detail-price" class="text-2xl font-bold text-[var(--button-color)]"></span>
                     <span id="detail-price-eur" class="text-sm text-[var(--hint-color)] mt-0.5"></span>
                 </div>
 
                 <div class="border-t border-[var(--tg-theme-section-separator-color)] pt-4 pb-10">
-                    <h3 class="text-sm font-bold mb-2">Описание</h3>
+                    <h3 class="text-sm font-bold mb-2" data-lang-key="descriptionTitle">Описание</h3>
                     <div id="detail-desc" class="text-sm leading-relaxed opacity-90 whitespace-pre-wrap"></div>
                 </div>
             </div>
@@ -404,35 +413,26 @@
                 </button>
                 <button id="detail-buy-btn" onclick="addToCartFromDetails()"
                     class="flex-grow py-3 rounded-xl font-bold text-center active:scale-95 transition-transform text-white shadow-lg"
-                    style="background-color: var(--button-color);">
-                    В корзину
-                </button>
+                    style="background-color: var(--button-color);" data-lang-key="buyButton">В корзину</button>
             </div>
         </div>
     </div>
 
-    <!-- 2. ЗУМ -->
-    <!-- <div id="image-modal" onclick="closeImage()" style="display: none;">
-        <img id="modal-img-full" src="" alt="Zoom" style="max-width: 100vw; max-height: 100vh; object-fit: contain;">
-        <button class="absolute top-4 right-4 text-white bg-gray-800/50 p-2 rounded-full backdrop-blur-sm"
-            onclick="closeImage()">
-            <i data-lucide="x" class="w-6 h-6"></i>
-        </button>
-    </div> -->
 
     <!-- 3. КОРЗИНА -->
     <div id="cart-modal" class="bottom-sheet">
         <div class="sheet-overlay" onclick="closeCart()"></div>
         <div class="sheet-content">
             <div class="p-4 flex justify-between items-center border-b border-gray-100/10">
-                <h2 class="text-xl font-bold">Ваш заказ</h2>
-                <button onclick="closeCart()" class="p-1 rounded-full bg-gray-200/20"><i data-lucide="x"
-                        class="w-5 h-5"></i></button>
+                <h2 class="text-xl font-bold" data-lang-key="cartTitle">Ваш заказ</h2>
+                <button onclick="closeCart()" class="p-1 rounded-full bg-gray-200/20">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
             </div>
             <div id="cart-items" class="overflow-y-auto flex-grow p-4 space-y-3"></div>
             <div class="p-4 border-t border-[var(--hint-color)] pb-8">
                 <div class="flex justify-between items-end mb-4">
-                    <span style="color: var(--hint-color)">Итого:</span>
+                    <span style="color: var(--hint-color)" data-lang-key="cartTotalLabel">Итого:</span>
                     <div class="text-right">
                         <div class="text-lg font-bold" id="total-rub">0 ₽</div>
                         <div class="text-sm" style="color: var(--button-color)" id="total-eur">0 €</div>
@@ -440,9 +440,8 @@
                 </div>
                 <button onclick="checkout()"
                     class="w-full py-3 rounded-xl font-bold text-center active:scale-95 transition-transform"
-                    style="background-color: var(--button-color); color: var(--button-text);">
-                    Оформить заказ
-                </button>
+                    style="background-color: var(--button-color); color: var(--button-text);"
+                    data-lang-key="checkoutButton">Оформить заказ</button>
             </div>
         </div>
     </div>
@@ -455,17 +454,67 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        console.log(tg);
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vThwYXuAiytgK3VCPRVuFBFt5ezWAe1Pj1_enZFNlKIp4Ha9C0i3-z-gUhM0ESz2YdUT1_aSJ2noxw8/pub?output=csv";
         const ADMIN = "Zaslon39";
         // const ADMIN = "vladislavho";
-        const CATS = ["Все", "Россия", "Германия", "Европа", "Америка", "Азия", "Медали", "Фалеристика "];
+        const CATEGORY_KEYS = [
+            'all',
+            'russia',
+            'germany',
+            'europe',
+            'americas',
+            'asia',
+            'medals',
+            'phaleristics',
+            'oceania',
+            'middle-east',
+            'patterns'
+        ];
 
+        const KEY_TO_RUSSIAN = {
+            all: 'Все',
+            russia: 'Россия',
+            germany: 'Германия',
+            europe: 'Европа',
+            americas: 'Америка',
+            asia: 'Азия',
+            medals: 'Медали',
+            phaleristics: 'Фалеристика',
+            oceania: 'Австралия и Океания',
+            'middle-east': 'Ближний Восток',
+            patterns: 'Пробники'
+        };
+
+        const RUSSIAN_TO_ENGLISH_CATEGORY = {
+            'Все': 'All',
+            'Россия': 'Russia',
+            'Германия': 'Germany',
+            'Европа': 'Europe',
+            'Америка': 'Americas',
+            'Азия': 'Asia',
+            'Медали': 'Medals',
+            'Фалеристика': 'Phaleristics',
+            'Австралия и Океания': 'Australia & Oceania',
+            'Ближний Восток': 'Middle East',
+            'Пробники': 'Patterns',
+            'Лот': 'Lot' // ← не забудьте про fallback!
+        };
+        function translateCategory(russianCat) {
+            if (currentLang === 'ru') {
+                return russianCat; // на русском — как есть
+            }
+            // на английском — маппим
+            return RUSSIAN_TO_ENGLISH_CATEGORY[russianCat] || russianCat;
+        }
+        const RUSSIAN_TO_KEY = {};
+        for (const [key, ru] of Object.entries(KEY_TO_RUSSIAN)) {
+            RUSSIAN_TO_KEY[ru] = key;
+        }
         let allProducts = [];
         let displayedProducts = [];
         let cart = [];
         let favorites = JSON.parse(localStorage.getItem('favs')) || [];
-        let currentCategory = "Все";
+        let currentCategory = 'all';
         let currentDetailItem = null;
         let isFavView = false;
 
@@ -482,6 +531,9 @@
 
         let pinchStartDist = 0;
         let pinchStartScale = 1;
+
+        let currentPage = 1;
+        const ITEMS_PER_PAGE = 10;
 
         function applyTransform() {
             img.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
@@ -658,12 +710,7 @@
                 modal.style.display = 'none';
             }
         }
-        function init() {
-            renderFilters();
-            loadData();
-            updateFavBadge();
-            updateThemeIcon();
-        }
+
 
         function loadData() {
             const bustedUrl = SHEET_URL + "&t=" + Date.now();
@@ -682,7 +729,7 @@
             container.innerHTML = '';
 
             if (!items.length) {
-                container.innerHTML = '<div class="col-span-2 text-center mt-10 opacity-50 flex flex-col items-center"><i data-lucide="search-x" class="w-10 h-10 mb-2"></i>Ничего не найдено</div>';
+                container.innerHTML = `<div class="col-span-2 text-center mt-10 opacity-50 flex flex-col items-center" data-lang-key="nothingFound"><i data-lucide="search-x" class="w-10 h-10 mb-2"></i>${t('nothingFound')}</div>`;
                 lucide.createIcons();
                 return;
             }
@@ -716,13 +763,15 @@
                 
                 <div class="p-3 flex flex-col flex-grow relative pointer-events-none"> 
                     <div class="flex justify-between items-start mb-1">
-                        <span class="text-[10px] font-bold uppercase tracking-wider opacity-60">${item.category || 'Лот'}</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider opacity-60">${translateCategory(item.category || 'Лот')}</span>
                     </div>
                     <h3 class="font-semibold text-sm leading-snug mb-1 line-clamp-2">${item.title}</h3>
                     
                     <div class="min-h-[1.5em] mt-1 flex flex-wrap items-center gap-2">
-                        ${hasSpecificQty && !isSold ?
-                        `<span class="text-[11px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded whitespace-nowrap">В наличии: ${qtyVal} шт.</span>`
+${hasSpecificQty && !isSold ?
+                        `<span class="text-[11px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded whitespace-nowrap">
+     ${t('inStockBadge', { qty: qtyVal })}
+   </span>`
                         : ''}
                         
                         ${location ?
@@ -764,7 +813,7 @@
             const hasSpecificQty = !isNaN(qtyVal) && qtyVal >= 0;
             const qtyEl = document.getElementById('detail-qty');
             if (hasSpecificQty && !checkSold(item)) {
-                qtyEl.innerText = `В наличии: ${qtyVal} шт.`;
+                qtyEl.innerText = t('inStock', { qty: qtyVal });
                 qtyEl.classList.remove('hidden');
             } else {
                 qtyEl.classList.add('hidden');
@@ -789,9 +838,12 @@
             const extraInfo = [];
 
             // Обрезаем пробелы у категории
-            if (item.category?.trim()) extraInfo.push(`<b>Категория</b><br/>${esc(item.category.trim())}`);
+            if (item.category?.trim()) {
+                const label = t('categoryLabel'); // ← "Категория" / "Category"
+                const value = translateCategoryValue(item.category.trim());
+                extraInfo.push(`<b>${esc(label)}</b><br/>${esc(value)}`);
+            }
 
-            console.log(extraInfo);
 
             if (extraInfo.length > 0) {
 
@@ -812,11 +864,11 @@
 
             if (checkSold(item) || (hasSpecificQty && currentInCart >= qtyVal)) {
                 buyBtn.disabled = true;
-                buyBtn.innerText = "Недоступно";
+                buyBtn.innerText = t('unavailable'); 
                 buyBtn.style.opacity = "0.5";
             } else {
                 buyBtn.disabled = false;
-                buyBtn.innerText = "В корзину";
+                buyBtn.innerText = t('addToCart');  
                 buyBtn.style.opacity = "1";
             }
 
@@ -906,13 +958,24 @@
         function closeCart() {
             document.getElementById('cart-modal').classList.remove('active');
         }
+        function t(key, params = {}) {
+            const dict = translations[currentLang] || translations.ru;
+            let str = dict[key] || key;
 
+            // Безопасная замена плейсхолдеров
+            for (const [param, value] of Object.entries(params)) {
+                str = str.replace(new RegExp(`\\{${param}\\}`, 'g'), String(value));
+            }
+
+            return str;
+        }
         function renderCartItems() {
+            console.log(cart)
             const cartItemsContainer = document.getElementById('cart-items');
             cartItemsContainer.innerHTML = '';
 
             if (!cart.length) {
-                cartItemsContainer.innerHTML = '<p class="text-center py-10 opacity-50">Корзина пуста</p>';
+                cartItemsContainer.innerHTML = `<p class="text-center py-10 opacity-50" data-lang-key="cartEmpty">${t('cartEmpty')}</p>`;
                 document.getElementById('total-rub').innerText = '0 ₽';
                 document.getElementById('total-eur').innerText = '0 €';
                 lucide.createIcons();
@@ -931,7 +994,7 @@
                     <img src="${item.image}" class="w-12 h-12 object-contain bg-white rounded">
                     <div class="flex-grow min-w-0">
                         <div class="text-sm font-medium truncate">${item.title}</div>
-                        <div class="text-xs opacity-70">Цена: ${item.price_rub} ₽</div>
+                        <div class="text-xs opacity-70">${t('itemPrice', { price: item.price_rub })}</div>
                     </div>
                     <span class="text-sm">× ${item.quantity}</span>
                     <button onclick="removeFromCart('${item.id}')" class="text-red-500">
@@ -975,9 +1038,9 @@
 
             const url = `https://t.me/${ADMIN}?start=order&text=${encodeURIComponent(message)}`;
 
-            // tg.openTelegramLink(url);
-            tg.sendData(message);
-            alert("Сообщение отправлено!");
+            tg.openTelegramLink(url);
+            // tg.sendData(message);
+            // alert("Сообщение отправлено!");
         }
 
         function handleSearch() {
@@ -1001,14 +1064,22 @@
             sortCatalog();
         }
 
-        window.filterItems = (cat) => {
-            currentCategory = cat;
+        window.filterItems = (categoryKey) => {
+            currentCategory = categoryKey;
             document.getElementById('search-input').value = '';
             document.getElementById('section-title').classList.add('hidden');
             isFavView = false;
-            updateFilterButtons();
-            displayedProducts = cat === 'Все' ? [...allProducts] : allProducts.filter(i => i.category && i.category.includes(cat));
-            sortCatalog();
+
+            // Получаем русский текст категории для фильтрации
+            const russianCategory = KEY_TO_RUSSIAN[categoryKey];
+
+            displayedProducts = (categoryKey === 'all')
+                ? [...allProducts]
+                : allProducts.filter(item => item.category === russianCategory); // ← фильтр по русскому
+
+            renderFilters();   // обновить кнопки
+            sortCatalog();     // обновить карточки
+            currentPage = 1
         };
 
         function updateFilterButtons() {
@@ -1026,9 +1097,25 @@
         }
 
         function renderFilters() {
-            document.getElementById('filters').innerHTML = CATS.map(cat => `
-            <button onclick="filterItems('${cat}')" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all" style="background-color: ${cat === 'Все' ? 'var(--text-color)' : 'var(--input-bg)'}; color: ${cat === 'Все' ? 'var(--bg-color)' : 'black'}">${cat}</button>
-        `).join('');
+            const container = document.getElementById('filters');
+            if (!container) return;
+
+            const langData = translations[currentLang] || translations.ru;
+            const tCat = langData.categories || translations.ru.categories;
+
+            container.innerHTML = CATEGORY_KEYS.map(key => {
+                const isActive = (key === currentCategory);
+                const label = tCat[key] || KEY_TO_RUSSIAN[key] || key;
+                return `
+      <button
+        onclick="filterItems('${key}')"
+        class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all"
+        style="background-color: ${isActive ? 'var(--text-color)' : 'var(--input-bg)'}; color: ${isActive ? 'var(--bg-color)' : 'var(--text-color)'}"
+      >
+        ${label}
+      </button>
+    `;
+            }).join('');
         }
 
         function toggleFav(id, btn) {
@@ -1090,8 +1177,9 @@
 
         function renderFavs() {
             displayedProducts = allProducts.filter(p => favorites.includes(p.id));
-            document.getElementById('section-title').innerText = "Избранное";
-            document.getElementById('section-title').classList.remove('hidden');
+            const favComp = document.getElementById('section-title');
+            favComp.innerText = t('favsTitle'); // ← сразу ставим перевод
+            favComp.classList.remove('hidden');
             sortCatalog();
         }
 
@@ -1107,21 +1195,75 @@
             const text = `💎 ${currentDetailItem.title}\n💰 ${currentDetailItem.price_rub}₽\n\nПосмотри в магазине!`;
             const url = `https://t.me/share/url?url=https://t.me/${BOT_USERNAME}&text=${encodeURIComponent(text)}`;
             tg.openTelegramLink(url);
-            
+
         };
 
         function sortCatalog() {
             const method = document.getElementById('sort-select').value;
+
+            // Сортировка
             displayedProducts.sort((a, b) => {
-                const aSold = checkSold(a); const bSold = checkSold(b);
-                if (aSold && !bSold) return 1; if (!aSold && bSold) return -1;
+                const aSold = checkSold(a);
+                const bSold = checkSold(b);
+                if (aSold && !bSold) return 1;
+                if (!aSold && bSold) return -1;
                 if (method === 'price_asc') return getPrice(a) - getPrice(b);
                 if (method === 'price_desc') return getPrice(b) - getPrice(a);
                 if (method === 'alpha') return a.title.localeCompare(b.title);
                 if (method === 'new') return (b.new ? 1 : 0) - (a.new ? 1 : 0);
                 return 0;
             });
-            renderCatalog(displayedProducts);
+
+            // Пагинация
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const paginatedItems = displayedProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+            // Рендерим ТОЛЬКО текущую страницу
+            renderCatalog(paginatedItems);
+
+            // Обновляем пагинацию
+            renderPagination();
+        }
+
+        function renderPagination() {
+
+            const totalPages = Math.ceil(displayedProducts.length / ITEMS_PER_PAGE);
+            const el = document.getElementById('pagination');
+            if (!el) return;
+
+            if (totalPages <= 1) {
+                el.classList.add('hidden');
+                return;
+            }
+            el.classList.remove('hidden');
+
+            let html = '';
+
+            // Назад
+            if (currentPage > 1) {
+                html += `<button onclick="goToPage(${currentPage - 1})" class="px-3 py-1.5 rounded-lg bg-[var(--input-bg)] text-[var(--text-color)]">&larr;</button>`;
+            }
+
+            // Страницы
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    html += `<button class="px-3 py-1.5 rounded-lg bg-[var(--text-color)] text-white font-[12px]">${i}</button>`;
+                } else {
+                    html += `<button onclick="goToPage(${i})" class="px-3 py-1.5 rounded-lg bg-[var(--input-bg)] text-[var(--text-color)]">${i}</button>`;
+                }
+            }
+
+            // Вперёд
+            if (currentPage < totalPages) {
+                html += `<button onclick="goToPage(${currentPage + 1})" class="px-3 py-1.5 rounded-lg bg-[var(--input-bg)] text-[var(--text-color)]">&rarr;</button>`;
+            }
+
+            el.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            sortCatalog(); // пересортирует и перерисует с новой страницей
         }
 
         function checkSold(item) { return item.status && (item.status.toLowerCase().includes('sold') || item.status.toLowerCase().includes('продано')); }
@@ -1159,6 +1301,148 @@
                 root.style.setProperty('--text-color', '#000000'); root.style.setProperty('--hint-color', '#9ca3af');
             }
             lucide.createIcons();
+        }
+        function translateCategoryValue(russianValue) {
+            if (currentLang === 'ru') return russianValue;
+            return RUSSIAN_TO_ENGLISH_CATEGORY[russianValue] || russianValue;
+        }
+
+
+        // Текстовые значения для RU и EN
+        // --- Данные перевода ---
+        const translations = {
+            ru: {
+                appTitle: 'Konigsberg Collection',
+                langToggle: 'RU',
+                resultsTitle: 'Результаты поиска',
+                searchPlaceholder: 'Поиск монет...',
+                sortDefault: 'По умолчанию',
+                sortNew: '🔥 Новинки',
+                sortPriceAsc: 'Цена: min',
+                sortPriceDesc: 'Цена: max',
+                sortAlpha: 'А-Я',
+                detailsTitle: 'ДЕТАЛИ',
+                costLabel: 'Стоимость:',
+                descriptionTitle: 'Описание',
+                buyButton: 'В корзину',
+                cartTitle: 'Ваш заказ',
+                cartTotalLabel: 'Итого:',
+                checkoutButton: 'Оформить заказ',
+                nothingFound: "Ничего не найдено",
+                cartEmpty: "Корзина пуста",
+                inStock: 'В наличии: {qty} шт.',
+                inStockBadge: 'В наличии: {qty} шт.',
+                favsTitle: "Избранное",
+                categoryLabel: 'Категория',
+                addToCart: 'В корзину',
+                unavailable: 'Недоступно',
+                categories: KEY_TO_RUSSIAN,
+                    itemPrice: 'Цена: {price} ₽'
+
+            },
+            en: {
+                appTitle: 'Konigsberg Collection',
+                langToggle: 'EN',
+                resultsTitle: 'Search results',
+                searchPlaceholder: 'Search coins...',
+                sortDefault: 'Default',
+                sortNew: '🔥 New arrivals',
+                sortPriceAsc: 'Price: low',
+                sortPriceDesc: 'Price: high',
+                sortAlpha: 'A–Z',
+                detailsTitle: 'DETAILS',
+                costLabel: 'Price:',
+                descriptionTitle: 'Description',
+                buyButton: 'Add to cart',
+                cartTitle: 'Your order',
+                cartTotalLabel: 'Total:',
+                checkoutButton: 'Checkout',
+                nothingFound: "Nothing found",
+                cartEmpty: "Cart is empty",
+                inStock: 'In stock: {qty} pcs.',
+                inStockBadge: 'In stock: {qty} pcs.',
+                favsTitle: 'Favorites',
+                categoryLabel: "Category",
+                addToCart: 'Add to cart',
+                unavailable: 'Unavailable',
+                itemPrice: 'Price: {price} ₽',
+                categories: {
+                    all: 'All',
+                    russia: 'Russia',
+                    germany: 'Germany',
+                    europe: 'Europe',
+                    americas: 'Americas',
+                    asia: 'Asia',
+                    medals: 'Medals',
+                    phaleristics: 'Phaleristics',
+                    'oceania': 'Australia & Oceania',
+                    'middle-east': 'Middle East',
+                    patterns: 'Patterns'
+                }
+            }
+        };
+
+        // Текущий язык
+        let currentLang = localStorage.getItem('uiLang');
+        if (currentLang !== 'ru' && currentLang !== 'en') {
+            currentLang = 'ru'; // язык по умолчанию — русский
+        }
+
+        // Применить переводы
+        function applyLanguage(lang) {
+            if (!translations[lang]) return;
+
+            const t = translations[lang];
+
+            // Обновить все элементы с data-lang-key
+            document.querySelectorAll('[data-lang-key]').forEach(el => {
+                const key = el.getAttribute('data-lang-key');
+                if (t[key] !== undefined) {
+                    // Для <input> — обновляем placeholder
+                    if (el.tagName === 'INPUT') {
+                        el.placeholder = t[key];
+                    } else {
+                        // Для всех остальных — textContent
+                        el.textContent = t[key];
+                    }
+                }
+            });
+
+            // Отдельно обновить <option> тексты — они не меняются через textContent в некоторых браузерах
+            const sortSelect = document.getElementById('sort-select');
+            if (sortSelect) {
+                const keys = ['sortDefault', 'sortNew', 'sortPriceAsc', 'sortPriceDesc', 'sortAlpha'];
+                keys.forEach((key, i) => {
+                    if (sortSelect.options[i]) {
+                        sortSelect.options[i].textContent = t[key];
+                    }
+                });
+            }
+
+            // Сохранить
+            currentLang = lang;
+            localStorage.setItem('uiLang', lang);
+        }
+
+        // Переключить язык
+        function toggleLanguage() {
+            currentLang = currentLang === 'ru' ? 'en' : 'ru';
+            localStorage.setItem('uiLang', currentLang);
+
+            applyLanguage(currentLang);
+            renderFilters();
+            sortCatalog();
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            applyLanguage(currentLang);
+        });
+        function init() {
+            renderFilters();
+            loadData();
+            updateFavBadge();
+            updateThemeIcon();
         }
         init();
 

@@ -741,7 +741,7 @@
                 const isFav = favorites.includes(item.id);
                 const qtyVal = parseInt(item.quantity) || 0;
                 const hasSpecificQty = item.quantity && item.quantity.trim() !== "" && qtyVal > 0;
-                const location = item.location || item.Location || item.loc || item.city || '';
+                const location = currentLang === 'en' ? item.location_en : item.location
 
                 // Текущее количество в корзине
                 const existingInCart = cart.find(c => c.id === item.id);
@@ -765,7 +765,9 @@
                     <div class="flex justify-between items-start mb-1">
                         <span class="text-[10px] font-bold uppercase tracking-wider opacity-60">${translateCategory(item.category || 'Лот')}</span>
                     </div>
-                    <h3 class="font-semibold text-sm leading-snug mb-1 line-clamp-2">${item.title}</h3>
+                   <h3 class="font-semibold text-sm leading-snug mb-1 line-clamp-2">
+  ${currentLang === 'en' ? (item.title_en || item.title) : item.title}
+</h3>
                     
                     <div class="min-h-[1.5em] mt-1 flex flex-wrap items-center gap-2">
 ${hasSpecificQty && !isSold ?
@@ -802,9 +804,20 @@ ${hasSpecificQty && !isSold ?
 
             currentDetailItem = item;
 
+            // --- Выбор локализованных полей ---
+            const title = currentLang === 'en' ? (item.title_en || item.title) : item.title;
+            const description = currentLang === 'en'
+                ? (item.description_en || item.description)
+                : (item.description || '');
+            const location = currentLang === 'en'
+                ? (item.location_en || item.location || item.Location || item.loc || item.city || '')
+                : (item.location || item.Location || item.loc || item.city || '');
+
             // --- Заполняем базовую информацию ---
             document.getElementById('detail-img').src = item.image;
-            document.getElementById('detail-title').innerText = item.title;
+            document.getElementById('detail-title').innerText = title; // ← локализовано
+
+            // Цена (остаётся одинаковой, но можно локализовать label — см. ниже)
             document.getElementById('detail-price').innerText = (item.price_rub || '—') + ' ₽';
             document.getElementById('detail-price-eur').innerText = item.price_eur ? `${item.price_eur} €` : '';
 
@@ -820,11 +833,10 @@ ${hasSpecificQty && !isSold ?
             }
 
             // Локация
-            const location = item.location || item.Location || item.loc || item.city || '';
             const locBadge = document.getElementById('detail-location-badge');
             const locText = document.getElementById('detail-location-text');
             if (location) {
-                locText.innerText = location;
+                locText.innerText = location; // ← локализовано
                 locBadge.classList.remove('hidden');
                 locBadge.classList.add('flex');
             } else {
@@ -832,26 +844,21 @@ ${hasSpecificQty && !isSold ?
                 locBadge.classList.remove('flex');
             }
 
-            // Описание (основное поле)
-            const desc = item.description || item.Description || 'Описание отсутствует';
-
+            // Категория
             const extraInfo = [];
-
-            // Обрезаем пробелы у категории
             if (item.category?.trim()) {
-                const label = t('categoryLabel'); // ← "Категория" / "Category"
+                const label = t('categoryLabel');
                 const value = translateCategoryValue(item.category.trim());
                 extraInfo.push(`<b>${esc(label)}</b><br/>${esc(value)}`);
             }
 
-
+            // Описание
+            const desc = description || t('noDescription'); // ← можно добавить fallback
             if (extraInfo.length > 0) {
-
-                // Используем innerHTML, чтобы отобразить <b> и <br/>
-                document.getElementById('detail-desc').innerHTML = desc + '<br><br>' + extraInfo.join('');
+                document.getElementById('detail-desc').innerHTML = esc(desc) + '<br><br>' + extraInfo.join('');
             } else {
-
-                // Используем innerText, если нет дополнительной информации (только текст)
+                // ❗ Важно: если используете innerText, HTML-теги не сработают
+                // Но desc — plain text, поэтому безопасно
                 document.getElementById('detail-desc').innerText = desc;
             }
 
@@ -864,11 +871,11 @@ ${hasSpecificQty && !isSold ?
 
             if (checkSold(item) || (hasSpecificQty && currentInCart >= qtyVal)) {
                 buyBtn.disabled = true;
-                buyBtn.innerText = t('unavailable'); 
+                buyBtn.innerText = t('unavailable');
                 buyBtn.style.opacity = "0.5";
             } else {
                 buyBtn.disabled = false;
-                buyBtn.innerText = t('addToCart');  
+                buyBtn.innerText = t('addToCart');
                 buyBtn.style.opacity = "1";
             }
 
@@ -1337,7 +1344,8 @@ ${hasSpecificQty && !isSold ?
                 addToCart: 'В корзину',
                 unavailable: 'Недоступно',
                 categories: KEY_TO_RUSSIAN,
-                    itemPrice: 'Цена: {price} ₽'
+                itemPrice: 'Цена: {price} ₽',
+                noDescription: 'Описание отсутствует'
 
             },
             en: {
@@ -1366,6 +1374,7 @@ ${hasSpecificQty && !isSold ?
                 addToCart: 'Add to cart',
                 unavailable: 'Unavailable',
                 itemPrice: 'Price: {price} ₽',
+                noDescription: 'No description available',
                 categories: {
                     all: 'All',
                     russia: 'Russia',

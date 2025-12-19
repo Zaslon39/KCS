@@ -1032,23 +1032,41 @@ ${hasSpecificQty && !isSold ?
             }
         }
 
-        function checkout() {
+        async function checkout() {
             if (cart.length === 0) {
                 alert("Корзина пуста!");
                 return;
             }
 
-            const orderDetails = cart.map(item => `${item.title} (${getPrice(item, 'rub') * item.quantity}₽)`).join('\n');
+            const orderDetails = cart.map(item =>
+                `${item.title} (${getPrice(item, 'rub') * item.quantity}₽)`
+            ).join('\n');
+
             const totalRub = cart.reduce((acc, item) => acc + getPrice(item, 'rub') * item.quantity, 0);
             const totalEur = cart.reduce((acc, item) => acc + getPrice(item, 'eur') * item.quantity, 0);
-            const message = `👋 Здравствуйте, @${ADMIN}!\n\nЗаказ:\n${orderDetails}\n\n💰 ИТОГО: ${totalRub}₽\n💰 ДЛЯ ЕС ИТОГО: ${totalEur}€`;
 
-            const url = `https://t.me/${ADMIN}?start=order&text=${encodeURIComponent(message)}`;
+            const message = `👋 Здравствуйте!\n\nЗаказ:\n${orderDetails}\n\n💰 ИТОГО: ${totalRub}₽\n💰 ДЛЯ ЕС ИТОГО: ${totalEur}€`;
 
-            tg.openTelegramLink(url);
-            // tg.sendData(message);
-            // alert("Сообщение отправлено!");
+            // Отправляем данные в бота
+            await fetch("/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    text: message,
+                    user: {
+                        id: tg.initDataUnsafe.user.id,
+                        firstName: tg.initDataUnsafe.user.first_name,
+                        lastName: tg.initDataUnsafe.user.last_name,
+                        username: tg.initDataUnsafe.user.username
+                    }
+                })
+            });
+
+
+            // Можно закрыть WebApp
+            tg.close();
         }
+
 
         function handleSearch() {
             const q = document.getElementById('search-input').value.toLowerCase().trim();
